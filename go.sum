@@ -1,3 +1,5 @@
+github.com/doby162/go-higher-order v0.1.1 h1:uj+sDnJ+YMNLHUdSEWaouPmhz3M9+KsxyZsU6BlYUsc=
+github.com/doby162/go-higher-order v0.1.1/go.mod h1:G1RVW3G7nC686d23LWAw75imDlzKzvtI/6xpTN8kAtU=
 github.com/go-chi/chi/v5 v5.2.3 h1:WQIt9uxdsAbgIYgid+BpYc+liqQZGMHRaUwp0JUcvdE=
 github.com/go-chi/chi/v5 v5.2.3/go.mod h1:L2yAIGWB3H+phAw1NxKwWM+7eUH/lU8pOMm5hHcoops=
 github.com/gorilla/websocket v1.5.3 h1:saDtZ6Pbx/0u+bgYQ3q96pZgCzfhKXGPqt7kZ72aNNg=
