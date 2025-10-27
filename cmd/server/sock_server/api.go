@@ -1,10 +1,11 @@
 package sock_server
 
 import (
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"log"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 func Api() error {
@@ -16,7 +17,7 @@ func Api() error {
 		serveWs(hub, w, r)
 	})
 	port := ":8080"
-	log.Printf("Listening on :%v \n", port)
+	log.Printf("Listening on http://127.0.0.1%v \n", port)
 	return http.ListenAndServe(port, r)
 	//return http.ListenAndServeTLS(":8080", "cert.pem", "key.pem", r)
 }
