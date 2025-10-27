@@ -52,7 +52,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func main() {
-	beet, _ := os.ReadFile("cmd/web/img/img.png")
+	beet, _ := os.ReadFile("assets/img/img.png")
 	bert, _, _ := image.Decode(bytes.NewReader(beet))
 	tom.sprite = ebiten.NewImageFromImage(bert)
 
