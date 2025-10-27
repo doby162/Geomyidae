@@ -15,7 +15,8 @@ func Api() error {
 	r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})
-	log.Println("Listening on :8000")
-	return http.ListenAndServe(":8080", r)
+	port := ":8080"
+	log.Printf("Listening on :%v \n", port)
+	return http.ListenAndServe(port, r)
 	//return http.ListenAndServeTLS(":8080", "cert.pem", "key.pem", r)
 }
