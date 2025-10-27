@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/doby162/go-higher-order"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -19,12 +18,14 @@ type guy struct {
 	sprite     *ebiten.Image
 	jumpFrames int
 	canJump    bool
+	// socket?
 }
 
 var tom = guy{
 	x: 5,
 	y: 5,
 }
+var otherPlayers = []guy{}
 var heldKeys []ebiten.Key
 var move = 50.0
 var jump = 400.0
@@ -39,6 +40,10 @@ func checkKey(checkKey ebiten.Key, fn func()) {
 }
 
 func (g *Game) Update() error {
+	prevPos := struct {
+		x, y float64
+	}{tom.x, tom.y}
+
 	releasedKeys := []ebiten.Key{}
 
 	// keys are added to held when pressed.
@@ -66,12 +71,19 @@ func (g *Game) Update() error {
 	}
 
 	// please appreciate the gravity of the situation
-	fmt.Println(tom.y)
 	if tom.y < 6400 {
 		tom.y += 150
 	} else {
 		// on the ground
 		tom.canJump = true
+	}
+
+	newPos := struct {
+		x, y float64
+	}{tom.x, tom.y}
+
+	if newPos != prevPos {
+		// tom.socket.Update() or whatever
 	}
 
 	return nil
