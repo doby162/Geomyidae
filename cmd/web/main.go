@@ -26,8 +26,8 @@ var tom = guy{
 var otherPlayers = []guy{}
 var heldKeys []ebiten.Key
 var releasedKeys []ebiten.Key
-var move = 50.0
-var jump = 400.0
+var move = 10.0
+var jump = 25.0
 
 func (g *Game) Update() error {
 	prevPos := struct {
@@ -51,8 +51,8 @@ func (g *Game) Update() error {
 	}
 
 	// please appreciate the gravity of the situation
-	if tom.y < 6400 {
-		tom.y += 150
+	if tom.y < 200 {
+		tom.y += 10
 	} else {
 		// on the ground
 		tom.canJump = true
@@ -72,7 +72,6 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(tom.x, tom.y)
-	op.GeoM.Scale(10.0/float64(tom.sprite.Bounds().Dx()), 20.0/float64(tom.sprite.Bounds().Dy()))
 	screen.DrawImage(tom.sprite, op)
 	ebitenutil.DebugPrint(screen, "Hello, World!")
 }
@@ -82,7 +81,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func main() {
-	beet, _ := os.ReadFile("assets/img/img.png")
+	beet, _ := os.ReadFile("assets/img/placeholderSprite.png")
 	bert, _, _ := image.Decode(bytes.NewReader(beet))
 	tom.sprite = ebiten.NewImageFromImage(bert)
 
