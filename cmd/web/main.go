@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"fmt"
+	"github.com/doby162/go-higher-order"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -13,36 +15,72 @@ import (
 type Game struct{}
 
 type guy struct {
-	x, y   float64
-	sprite *ebiten.Image
+	x, y       float64
+	sprite     *ebiten.Image
+	jumpFrames int
+	canJump    bool
 }
 
 var tom = guy{
 	x: 5,
 	y: 5,
 }
+var heldKeys []ebiten.Key
+var move = 50.0
+var jump = 400.0
+
+// key checks take a function to run if the key is held
+func checkKey(checkKey ebiten.Key, fn func()) {
+	if higher_order.AnySlice(heldKeys, func(key ebiten.Key) bool {
+		return key == checkKey
+	}) {
+		fn()
+	}
+}
 
 func (g *Game) Update() error {
-	move := 10.0
-	if inpututil.IsKeyJustPressed(ebiten.KeyW) {
-		tom.y -= move
+	releasedKeys := []ebiten.Key{}
+
+	// keys are added to held when pressed.
+	// keys are removed when released
+	heldKeys = inpututil.AppendPressedKeys(heldKeys)
+	releasedKeys = inpututil.AppendJustReleasedKeys([]ebiten.Key{})
+	for _, key := range releasedKeys {
+		heldKeys = higher_order.FilterSlice(heldKeys, func(key2 ebiten.Key) bool {
+			return key != key2
+		})
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyS) {
-		tom.y += move
+
+	checkKey(ebiten.KeyA, func() { tom.x -= move })
+	checkKey(ebiten.KeyD, func() { tom.x += move })
+	checkKey(ebiten.KeyW, func() {
+		if tom.canJump {
+			tom.jumpFrames = 10
+			tom.canJump = false
+		}
+	})
+
+	if tom.jumpFrames > 0 {
+		tom.jumpFrames -= 1
+		tom.y -= jump
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyA) {
-		tom.x -= move
+
+	// please appreciate the gravity of the situation
+	fmt.Println(tom.y)
+	if tom.y < 6400 {
+		tom.y += 150
+	} else {
+		// on the ground
+		tom.canJump = true
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyD) {
-		tom.x += move
-	}
+
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(tom.x, tom.y)
-	op.GeoM.Scale(100.0/float64(tom.sprite.Bounds().Dx()), 100.0/float64(tom.sprite.Bounds().Dy()))
+	op.GeoM.Scale(10.0/float64(tom.sprite.Bounds().Dx()), 20.0/float64(tom.sprite.Bounds().Dy()))
 	screen.DrawImage(tom.sprite, op)
 	ebitenutil.DebugPrint(screen, "Hello, World!")
 }
