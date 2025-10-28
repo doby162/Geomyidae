@@ -2,11 +2,18 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
+	"fmt"
+	higher_order "github.com/doby162/go-higher-order"
+	"github.com/gorilla/websocket"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"image"
 	"log"
+	"net/url"
 	"os"
+	"os/signal"
+	"time"
 )
 
 type Game struct{}
@@ -16,8 +23,11 @@ type guy struct {
 	sprite     *ebiten.Image
 	jumpFrames int
 	canJump    bool
-	// socket?
+	sock       *websocket.Conn
+	name       string
 }
+
+var others []guy
 
 var tom = guy{
 	x: 5,
@@ -63,16 +73,32 @@ func (g *Game) Update() error {
 	}{tom.x, tom.y}
 
 	if newPos != prevPos {
-		// tom.socket.Update() or whatever
+		msg := fmt.Sprintf("{\"x\": %v, \"y\": %v, \"name\": \"%v\"}", newPos.x, newPos.y, tom.name)
+		err := tom.sock.WriteMessage(websocket.TextMessage, []byte(msg))
+		if err != nil {
+			log.Print(err.Error())
+		}
 	}
 
 	return nil
+}
+
+type updateMsg struct {
+	Name string  `json:"name"`
+	X    float64 `json:"x"`
+	Y    float64 `json:"y"`
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(tom.x, tom.y)
 	screen.DrawImage(tom.sprite, op)
+	for _, ourGuy := range others {
+		log.Printf("%+v", ourGuy)
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(ourGuy.x, ourGuy.y)
+		screen.DrawImage(ourGuy.sprite, op)
+	}
 	ebitenutil.DebugPrint(screen, "Hello, World!")
 }
 
@@ -84,6 +110,85 @@ func main() {
 	beet, _ := os.ReadFile("assets/img/placeholderSprite.png")
 	bert, _, _ := image.Decode(bytes.NewReader(beet))
 	tom.sprite = ebiten.NewImageFromImage(bert)
+	tom.name = generateRandomString(16)
+
+	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/ws"}
+	log.Printf("connecting to %s", u.String())
+
+	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	if err != nil {
+		log.Fatal("dial:", err)
+	}
+	defer c.Close()
+
+	tom.sock = c
+
+	done := make(chan struct{})
+
+	go func() {
+		defer close(done)
+		for {
+			_, message, err := c.ReadMessage()
+			if err != nil {
+				log.Println("read:", err)
+				return
+			}
+			m := updateMsg{}
+			var ourGuy guy
+			err = json.Unmarshal(message, &m)
+			if err != nil {
+				log.Println("unmarshal:", err)
+			} else if m.Name == tom.name {
+			} else if higher_order.AnySlice(others, func(g guy) bool {
+				if g.name == m.Name {
+					ourGuy = g
+					return true
+				}
+				return false
+			}) { // if we have the guy already
+				log.Println("found our guy")
+				ourGuy.x = m.X
+				ourGuy.y = m.Y
+				// remove and re-append because I want to get this commited before I mess with pointers
+				others = higher_order.FilterSlice(others, func(g guy) bool {
+					return g.name != m.Name
+				})
+				others = append(others, ourGuy)
+			} else { //  if we  have to make a new guy
+				log.Println("make a new guy")
+				ourGuy = guy{x: m.X, y: m.Y, sprite: ebiten.NewImageFromImage(bert), name: m.Name}
+				others = append(others, ourGuy)
+			}
+			//log.Printf("recv: %s", message)
+		}
+	}()
+
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt)
+
+	go func() {
+		for {
+			select {
+			case <-done:
+				return
+			case <-interrupt:
+				log.Println("interrupt")
+
+				// Cleanly close the connection by sending a close message and then
+				// waiting (with timeout) for the server to close the connection.
+				err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+				if err != nil {
+					log.Println("write close:", err)
+					return
+				}
+				select {
+				case <-done:
+				case <-time.After(time.Second):
+				}
+				return
+			}
+		}
+	}()
 
 	ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowTitle("Hello, World!")
