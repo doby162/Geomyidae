@@ -151,7 +151,7 @@ func main() {
 				ourGuy.y = m.Y
 			} else { //  if we  have to make a new guy
 				log.Println("make a new guy")
-				ourGuy = &guy{x: m.X, y: m.Y, sprite: ebiten.NewImageFromImage(bert), name: m.Name}
+				ourGuy = &guy{x: m.X, y: m.Y, sprite: tom.sprite, name: m.Name}
 				others = append(others, ourGuy)
 			}
 			//log.Printf("recv: %s", message)
