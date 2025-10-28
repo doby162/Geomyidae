@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	higher_order "github.com/doby162/go-higher-order"
+	"github.com/doby162/go-higher-order"
 	"github.com/gorilla/websocket"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -27,7 +27,7 @@ type guy struct {
 	name       string
 }
 
-var others []guy
+var others []*guy
 
 var tom = guy{
 	x: 5,
@@ -134,12 +134,12 @@ func main() {
 				return
 			}
 			m := updateMsg{}
-			var ourGuy guy
+			var ourGuy *guy
 			err = json.Unmarshal(message, &m)
 			if err != nil {
 				log.Println("unmarshal:", err)
 			} else if m.Name == tom.name {
-			} else if higher_order.AnySlice(others, func(g guy) bool {
+			} else if higher_order.AnySlice(others, func(g *guy) bool {
 				if g.name == m.Name {
 					ourGuy = g
 					return true
@@ -149,14 +149,9 @@ func main() {
 				log.Println("found our guy")
 				ourGuy.x = m.X
 				ourGuy.y = m.Y
-				// remove and re-append because I want to get this commited before I mess with pointers
-				others = higher_order.FilterSlice(others, func(g guy) bool {
-					return g.name != m.Name
-				})
-				others = append(others, ourGuy)
 			} else { //  if we  have to make a new guy
 				log.Println("make a new guy")
-				ourGuy = guy{x: m.X, y: m.Y, sprite: ebiten.NewImageFromImage(bert), name: m.Name}
+				ourGuy = &guy{x: m.X, y: m.Y, sprite: ebiten.NewImageFromImage(bert), name: m.Name}
 				others = append(others, ourGuy)
 			}
 			//log.Printf("recv: %s", message)
