@@ -1,7 +1,7 @@
 package main
 
 import (
-	higher_order "github.com/doby162/go-higher-order"
+	"github.com/doby162/go-higher-order"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
