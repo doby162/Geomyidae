@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"runtime"
 	"time"
 
 	higher_order "github.com/doby162/go-higher-order"
@@ -104,7 +105,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		op.GeoM.Translate(ourGuy.x, ourGuy.y)
 		screen.DrawImage(ourGuy.sprite, op)
 	}
-	ebitenutil.DebugPrint(screen, "Tom's position: "+fmt.Sprintf("%.2f, %.2f", tom.x, tom.y))
+	ebitenutil.DebugPrint(screen, "Tom's position: "+fmt.Sprintf("%.2f, %.2f, goroutines:%v", tom.x, tom.y, runtime.NumGoroutine()))
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
@@ -112,7 +113,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 }
 
 func main() {
-	//slog.SetLogLoggerLevel(slog.LevelDebug) // uncomment for verbos logs
+	//slog.SetLogLoggerLevel(slog.LevelDebug) // uncomment for verbose logs
 	beet, _ := os.ReadFile("assets/img/placeholderSprite.png")
 	bert, _, _ := image.Decode(bytes.NewReader(beet))
 	tom.sprite = ebiten.NewImageFromImage(bert)
