@@ -4,16 +4,22 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/doby162/go-higher-order"
-	"github.com/gorilla/websocket"
-	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"image"
 	"log"
 	"net/url"
 	"os"
 	"os/signal"
 	"time"
+
+	higher_order "github.com/doby162/go-higher-order"
+	"github.com/gorilla/websocket"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+)
+
+const (
+	screenWidth  = 640
+	screenHeight = 480
 )
 
 type Game struct{}
@@ -61,7 +67,7 @@ func (g *Game) Update() error {
 	}
 
 	// please appreciate the gravity of the situation
-	if tom.y < 200 {
+	if tom.y < screenHeight-70 {
 		tom.y += 10
 	} else {
 		// on the ground
@@ -102,8 +108,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	ebitenutil.DebugPrint(screen, "Hello, World!")
 }
 
-func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return 320, 240
+func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
+	return screenWidth, screenHeight
 }
 
 func main() {
@@ -185,7 +191,7 @@ func main() {
 		}
 	}()
 
-	ebiten.SetWindowSize(640, 480)
+	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Hello, World!")
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)
