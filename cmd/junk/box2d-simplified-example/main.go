@@ -4,6 +4,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"runtime"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -103,7 +104,8 @@ func (v *viz) Draw(screen *ebiten.Image) {
 
 	v.physics.Draw(screen, toScreen)
 
-	text := fmt.Sprintf("physics %T: %1.2fms\nPress 'p' to toggle pause.\nPress 's' to toggle slowmo.", v.physics, v.physicsTime*1000.0)
+	numGoRoutines := runtime.NumGoroutine()
+	text := fmt.Sprintf("physics %T: %1.2fms - goroutines: %d\nPress 'p' to toggle pause.\nPress 's' to toggle slowmo.", v.physics, v.physicsTime*1000.0, numGoRoutines)
 	ebitenutil.DebugPrintAt(screen, text, 475, 16)
 
 	if v.paused {
