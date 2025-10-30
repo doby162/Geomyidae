@@ -18,8 +18,8 @@ import (
 )
 
 const (
-	screenWidth  = 640
-	screenHeight = 480
+	screenWidth  = 1200
+	screenHeight = 800
 )
 
 type Game struct{}
@@ -190,8 +190,9 @@ func main() {
 		}
 	}()
 
+	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.SetWindowSize(screenWidth, screenHeight)
-	ebiten.SetWindowTitle("Hello, World!")
+	ebiten.SetWindowTitle("Hello, Tom!")
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)
 	}
