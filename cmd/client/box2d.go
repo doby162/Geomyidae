@@ -11,6 +11,7 @@ import (
 )
 
 type Body interface {
+	ApplyForce(b2.Vec2)
 	Position() (float64, float64)
 	Rotation() float64
 	SetVelocity(x, y float64)
@@ -192,6 +193,8 @@ func (ph Box2D) CreateSquare(halfSize, centerX, centerY float64, d BodyDef) Body
 	def.Type1 = b2.DynamicBody
 	body := ph.World.CreateBody(def)
 	body.SetTransform(tr.P, tr.Q)
+	// this is where a real body is
+	//body.ApplyForce()
 
 	shape := b2.DefaultShapeDef()
 	shape.Density = float32(d.Density)
@@ -239,4 +242,8 @@ func (b *b2Body) Rotation() float64 {
 
 func (b *b2Body) SetVelocity(x, y float64) {
 	b.body.SetLinearVelocity(b2.Vec2{X: float32(x), Y: float32(y)})
+}
+
+func (b *b2Body) ApplyForce(force b2.Vec2) {
+	b.body.ApplyForce(force, b.body.GetPosition(), 1)
 }

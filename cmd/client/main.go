@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	b2 "github.com/oliverbestmann/box2d-go"
 	"image"
 	"log"
 	"log/slog"
@@ -33,47 +34,47 @@ type guy struct {
 	canJump    bool
 	sock       *websocket.Conn
 	name       string
+	body       Body
 }
 
 var others []*guy
 
-var tom = guy{
-	x: 5,
-	y: 5,
-}
+var tom = guy{}
 var heldKeys []ebiten.Key
 var releasedKeys []ebiten.Key
 var move = 10.0
 var jump = 25.0
 
 func (g *Game) Update() error {
+	physics.Step(1, 1) // needs delta time
 	prevPos := struct {
 		x, y float64
 	}{tom.x, tom.y}
 
+	x, y := tom.body.Position()
+	tom.x = x
+	tom.y = y
+
 	handleKeyState()
 
-	checkKey(ebiten.KeyA, func() { tom.x -= move })
-	checkKey(ebiten.KeyD, func() { tom.x += move })
-	checkKey(ebiten.KeyW, func() {
-		if tom.canJump {
-			tom.jumpFrames = 10
-			tom.canJump = false
-		}
+	checkKey(ebiten.KeyA, func() {
+		tom.body.ApplyForce(b2.Vec2{
+			X: -1,
+			Y: 0,
+		})
 	})
-
-	if tom.jumpFrames > 0 {
-		tom.jumpFrames -= 1
-		tom.y -= jump
-	}
-
-	// please appreciate the gravity of the situation
-	if tom.y < screenHeight-70 {
-		tom.y += 10
-	} else {
-		// on the ground
-		tom.canJump = true
-	}
+	checkKey(ebiten.KeyD, func() {
+		tom.body.ApplyForce(b2.Vec2{
+			X: 1,
+			Y: 0,
+		})
+	})
+	checkKey(ebiten.KeyW, func() {
+		tom.body.ApplyForce(b2.Vec2{
+			X: 0,
+			Y: -5,
+		})
+	})
 
 	newPos := struct {
 		x, y float64
@@ -98,7 +99,9 @@ type updateMsg struct {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(tom.x, tom.y)
+	physics.Draw(screen, op.GeoM)
+	x, y := tom.body.Position()
+	op.GeoM.Translate(x, y)
 	screen.DrawImage(tom.sprite, op)
 	for _, ourGuy := range others {
 		op := &ebiten.DrawImageOptions{}
@@ -112,12 +115,37 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return screenWidth, screenHeight
 }
 
+var physics Physics
+
 func main() {
 	//slog.SetLogLoggerLevel(slog.LevelDebug) // uncomment for verbose logs
 	beet, _ := os.ReadFile("assets/img/placeholderSprite.png")
 	bert, _, _ := image.Decode(bytes.NewReader(beet))
 	tom.sprite = ebiten.NewImageFromImage(bert)
 	tom.name = generateRandomString(16)
+
+	physics = b2New(0.5)
+
+	var bodies []Body
+
+	floor := BodyDef{Elasticity: 0.1, Friction: 0.9, Density: 1}
+	box := BodyDef{Elasticity: 0.25, Friction: 0.5, Density: 1}
+	const Layers = 20
+
+	for l := range Layers {
+		for i := range l {
+			inc := 1.4
+			centerX := float64(i) + inc - float64(l)/2
+			centerY := (Layers - float64(l) - 0.5) * 1.0
+
+			bodies = append(bodies, physics.CreateSquare(inc, centerX+100, centerY, box))
+		}
+	}
+
+	bodies = append(bodies, physics.CreateStaticLine(0, 600, 1000, 600, floor))
+
+	tom.body = physics.CreateSquare(1, 500, 5, box)
+	bodies = append(bodies, tom.body)
 
 	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/ws"}
 	slog.Debug("connecting to %s", u.String())
