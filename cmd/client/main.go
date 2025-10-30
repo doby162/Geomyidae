@@ -105,7 +105,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		op.GeoM.Translate(ourGuy.x, ourGuy.y)
 		screen.DrawImage(ourGuy.sprite, op)
 	}
-	ebitenutil.DebugPrint(screen, "Hello, World!")
+	ebitenutil.DebugPrint(screen, "Tom's position: "+fmt.Sprintf("%.2f, %.2f", tom.x, tom.y))
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
