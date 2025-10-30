@@ -3,14 +3,12 @@ package main
 
 import (
 	"fmt"
-	"time"
-
 	"math"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	b2 "github.com/oliverbestmann/box2d-go"
 )
@@ -37,10 +35,14 @@ type viz struct {
 }
 
 func (v *viz) Update() error {
+	// Initialize box2d physics on first update
+	// I'm not sure if this could be done in some other place like an "init" function,
+	// but this works for now.
 	if v.physics == nil {
-		v.initialize(b2New)
+		v.initializePhysics()
 	}
 
+	// Handle input
 	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
 		v.paused = !v.paused
 	}
@@ -49,6 +51,7 @@ func (v *viz) Update() error {
 		v.slowmo = !v.slowmo
 	}
 
+	// Step physics, otherwise it doesn't happen
 	if v.physics != nil && !v.paused {
 		var step = 1 / 60.0
 
@@ -76,12 +79,7 @@ func (v *viz) Update() error {
 }
 
 func (v *viz) Draw(screen *ebiten.Image) {
-	if v.physics == nil {
-		text := "press b for box2d, c for jakecoffman/cp"
-		ebitenutil.DebugPrintAt(screen, text, 16, 16)
-		return
-	}
-
+	// Remember, this just draws stuff, not update physics
 	w, h := float64(screen.Bounds().Dx()), float64(screen.Bounds().Dy())
 
 	var toScreen ebiten.GeoM
@@ -106,10 +104,10 @@ func (v *viz) Draw(screen *ebiten.Image) {
 	v.physics.Draw(screen, toScreen)
 
 	text := fmt.Sprintf("physics %T: %1.2fms\nPress 'p' to toggle pause.\nPress 's' to toggle slowmo.", v.physics, v.physicsTime*1000.0)
-	ebitenutil.DebugPrintAt(screen, text, 16, 16)
+	ebitenutil.DebugPrintAt(screen, text, 475, 16)
 
 	if v.paused {
-		ebitenutil.DebugPrintAt(screen, "paused", 16, 64)
+		ebitenutil.DebugPrintAt(screen, "paused", 475, 64)
 	}
 }
 
@@ -117,8 +115,8 @@ func (v *viz) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight
 	return outsideWidth, outsideHeight
 }
 
-func (v *viz) initialize(makePhysics func(gravity float64) Physics) {
-	ph := makePhysics(-10)
+func (v *viz) initializePhysics() {
+	physics := b2New(-10)
 
 	var bodies []Body
 
@@ -126,9 +124,9 @@ func (v *viz) initialize(makePhysics func(gravity float64) Physics) {
 	box := BodyDef{Elasticity: 0.25, Friction: 0.5, Density: 1}
 	big := BodyDef{Density: 10, Elasticity: 0.1, Friction: 0.9}
 
-	bodies = append(bodies, ph.CreateStaticLine(-2*Layers, 0, 2*Layers, 0, floor))
-	bodies = append(bodies, ph.CreateStaticLine(-2*Layers, 0, -2*Layers, 100, floor))
-	bodies = append(bodies, ph.CreateStaticLine(2*Layers, 0, 2*Layers, 100, floor))
+	bodies = append(bodies, physics.CreateStaticLine(-2*Layers, 0, 2*Layers, 0, floor))
+	bodies = append(bodies, physics.CreateStaticLine(-2*Layers, 0, -2*Layers, 100, floor))
+	bodies = append(bodies, physics.CreateStaticLine(2*Layers, 0, 2*Layers, 100, floor))
 
 	// create layers of boxes
 	for l := range Layers {
@@ -136,16 +134,16 @@ func (v *viz) initialize(makePhysics func(gravity float64) Physics) {
 			centerX := float64(i) + 0.5 - float64(l)/2
 			centerY := (Layers - float64(l) - 0.5) * 1.0
 
-			bodies = append(bodies, ph.CreateSquare(0.5, centerX, centerY, box))
+			bodies = append(bodies, physics.CreateSquare(0.5, centerX, centerY, box))
 		}
 	}
 
 	// create a fast moving box
-	b := ph.CreateSquare(2, -1.8*Layers, 2.6*Layers, big)
+	b := physics.CreateSquare(2, -1.8*Layers, 2.6*Layers, big)
 	b.SetVelocity(75, -100)
 	bodies = append(bodies, b)
 
-	v.physics = ph
+	v.physics = physics
 	v.bodies = bodies
 	v.paused = false
 }
