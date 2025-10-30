@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"image"
 	"log"
+	"log/slog"
 	"net/url"
 	"os"
 	"os/signal"
@@ -81,7 +82,7 @@ func (g *Game) Update() error {
 		msg := fmt.Sprintf("{\"x\": %v, \"y\": %v, \"name\": \"%v\"}", newPos.x, newPos.y, tom.name)
 		err := tom.sock.WriteMessage(websocket.TextMessage, []byte(msg))
 		if err != nil {
-			log.Print(err.Error())
+			slog.Error(err.Error())
 		}
 	}
 
@@ -99,7 +100,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	op.GeoM.Translate(tom.x, tom.y)
 	screen.DrawImage(tom.sprite, op)
 	for _, ourGuy := range others {
-		log.Printf("%+v", ourGuy)
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(ourGuy.x, ourGuy.y)
 		screen.DrawImage(ourGuy.sprite, op)
@@ -112,19 +112,25 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 }
 
 func main() {
+	//slog.SetLogLoggerLevel(slog.LevelDebug) // uncomment for verbos logs
 	beet, _ := os.ReadFile("assets/img/placeholderSprite.png")
 	bert, _, _ := image.Decode(bytes.NewReader(beet))
 	tom.sprite = ebiten.NewImageFromImage(bert)
 	tom.name = generateRandomString(16)
 
 	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/ws"}
-	log.Printf("connecting to %s", u.String())
+	slog.Debug("connecting to %s", u.String())
 
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
 		log.Fatal("dial:", err)
 	}
-	defer c.Close()
+	defer func(c *websocket.Conn) {
+		err := c.Close()
+		if err != nil {
+			slog.Error(err.Error())
+		}
+	}(c)
 
 	tom.sock = c
 
@@ -135,14 +141,14 @@ func main() {
 		for {
 			_, message, err := c.ReadMessage()
 			if err != nil {
-				log.Println("read:", err)
+				slog.Error("read:", err)
 				return
 			}
 			m := updateMsg{}
 			var ourGuy *guy
 			err = json.Unmarshal(message, &m)
 			if err != nil {
-				log.Println("unmarshal:", err)
+				slog.Error("unmarshal:", err)
 			} else if m.Name == tom.name {
 			} else if higher_order.AnySlice(others, func(g *guy) bool {
 				if g.name == m.Name {
@@ -151,15 +157,15 @@ func main() {
 				}
 				return false
 			}) { // if we have the guy already
-				log.Println("found our guy")
+				slog.Debug("found our guy")
 				ourGuy.x = m.X
 				ourGuy.y = m.Y
 			} else { //  if we  have to make a new guy
-				log.Println("make a new guy")
+				slog.Debug("make a new guy")
 				ourGuy = &guy{x: m.X, y: m.Y, sprite: tom.sprite, name: m.Name}
 				others = append(others, ourGuy)
 			}
-			//log.Printf("recv: %s", message)
+			slog.Debug("recv: %s", message)
 		}
 	}()
 
@@ -172,13 +178,13 @@ func main() {
 			case <-done:
 				return
 			case <-interrupt:
-				log.Println("interrupt")
+				slog.Debug("interrupt")
 
 				// Cleanly close the connection by sending a close message and then
 				// waiting (with timeout) for the server to close the connection.
 				err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 				if err != nil {
-					log.Println("write close:", err)
+					slog.Debug("write close:", err)
 					return
 				}
 				select {
