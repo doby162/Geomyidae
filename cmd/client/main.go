@@ -39,7 +39,6 @@ var tom = guy{
 	x: 5,
 	y: 5,
 }
-var otherPlayers = []guy{}
 var heldKeys []ebiten.Key
 var releasedKeys []ebiten.Key
 var move = 10.0
