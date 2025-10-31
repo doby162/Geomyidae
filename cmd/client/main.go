@@ -105,7 +105,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	screen.DrawImage(tom.sprite, op)
 	for _, ourGuy := range others {
 		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(ourGuy.x, ourGuy.y)
+		op.GeoM.Translate(ourGuy.x-32, ourGuy.y-32)
 		screen.DrawImage(ourGuy.sprite, op)
 	}
 	ebitenutil.DebugPrint(screen, "Tom's position: "+fmt.Sprintf("%.2f, %.2f, goroutines:%v", tom.x, tom.y, runtime.NumGoroutine()))
@@ -185,12 +185,13 @@ func main() {
 				slog.Debug("found our guy")
 				ourGuy.x = m.X
 				ourGuy.y = m.Y
-				ourGuy.body.SetPosition((m.X/64)+32, (m.Y/64)+32)
+				//ourGuy.body.SetPosition((m.X/64)+32, (m.Y/64)+32)
 			} else { //  if we  have to make a new guy
 				slog.Debug("make a new guy")
-				bod := physics.CreateSquare(0.5, (m.X/64)+32, (m.Y/64)+32, box)
-				bodies = append(bodies, bod) // we don't actually do anything with this yet
-				ourGuy = &guy{x: m.X, y: m.Y, sprite: tom.sprite, name: m.Name, body: bod}
+				//bod := physics.CreateSquare(0.5, (m.X/64)+32, (m.Y/64)+32, box)
+				//bodies = append(bodies, bod) // we don't actually do anything with this yet
+				//ourGuy = &guy{x: m.X, y: m.Y, sprite: tom.sprite, name: m.Name, body: bod}
+				ourGuy = &guy{x: m.X, y: m.Y, sprite: tom.sprite, name: m.Name}
 				others = append(others, ourGuy)
 			}
 			slog.Debug("recv: %s", message)
