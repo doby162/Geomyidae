@@ -15,6 +15,7 @@ type Body interface {
 	Position() (float64, float64)
 	Rotation() float64
 	SetVelocity(x, y float64)
+	SetPosition(x, y float64)
 }
 
 type BodyDef struct {
@@ -264,6 +265,13 @@ func (b *b2Body) Rotation() float64 {
 
 func (b *b2Body) SetVelocity(x, y float64) {
 	b.body.SetLinearVelocity(b2.Vec2{X: float32(x), Y: float32(y)})
+}
+func (b *b2Body) SetPosition(x, y float64) {
+	v := b2.Vec2{X: float32(x), Y: float32(y)}
+	b.body.SetTransform(v, b2.Rot{
+		C: 0,
+		S: 0,
+	})
 }
 
 func (b *b2Body) ApplyForce(force b2.Vec2) {

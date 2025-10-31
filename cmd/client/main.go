@@ -101,7 +101,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	op.GeoM.Scale(64, 64)
 	physics.Draw(screen, op.GeoM)
 	op = &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(tom.x-32, tom.y-32g)
+	op.GeoM.Translate(tom.x-32, tom.y-32)
 	screen.DrawImage(tom.sprite, op)
 	for _, ourGuy := range others {
 		op := &ebiten.DrawImageOptions{}
@@ -130,17 +130,6 @@ func main() {
 
 	tile := BodyDef{Elasticity: 0.1, Friction: 0.9, Density: 1}
 	box := BodyDef{Elasticity: 0.25, Friction: 0.5, Density: 1}
-	const Layers = 20
-
-	for l := range Layers {
-		for i := range l {
-			inc := 1.4
-			centerX := float64(i) + inc - float64(l)/2
-			centerY := (Layers - float64(l) - 0.5) * 1.0
-
-			bodies = append(bodies, physics.CreateSquare(inc, centerX+100, centerY, box))
-		}
-	}
 
 	for rowIndex, row := range strings.Split(scene01, "\n") {
 		for colIndex, col := range row {
@@ -196,9 +185,12 @@ func main() {
 				slog.Debug("found our guy")
 				ourGuy.x = m.X
 				ourGuy.y = m.Y
+				ourGuy.body.SetPosition((m.X/64)+32, (m.Y/64)+32)
 			} else { //  if we  have to make a new guy
 				slog.Debug("make a new guy")
-				ourGuy = &guy{x: m.X, y: m.Y, sprite: tom.sprite, name: m.Name}
+				bod := physics.CreateSquare(0.5, (m.X/64)+32, (m.Y/64)+32, box)
+				bodies = append(bodies, bod) // we don't actually do anything with this yet
+				ourGuy = &guy{x: m.X, y: m.Y, sprite: tom.sprite, name: m.Name, body: bod}
 				others = append(others, ourGuy)
 			}
 			slog.Debug("recv: %s", message)
