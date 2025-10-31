@@ -202,7 +202,11 @@ func (ph Box2D) CreateSquare(halfSize, centerX, centerY float64, d BodyDef, fixe
 	shape.Density = float32(d.Density)
 	shape.Material.Restitution = float32(d.Elasticity)
 	shape.Material.Friction = float32(d.Friction)
-	body.CreatePolygonShape(shape, b2.MakeSquare(float32(halfSize)))
+	body.CreateCapsuleShape(shape, b2.Capsule{
+		Center1: b2.Vec2{X: float32(0), Y: float32(0)},
+		Center2: b2.Vec2{X: float32(0), Y: float32(0)},
+		Radius:  float32(halfSize),
+	})
 
 	return &b2Body{body: body}
 }
