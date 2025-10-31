@@ -28,6 +28,7 @@ type Physics interface {
 	Step(dt float64, subSteps int)
 	CreateSquare(halfSize, centerX, centerY float64, def BodyDef) Body
 	CreateStaticLine(x0, y0, x1, y1 float64, def BodyDef) Body
+	CreateStaticTile(halfSize, centerX, centerY float64, def BodyDef) Body
 }
 
 func b2New(gravity float64) Physics {
@@ -195,6 +196,27 @@ func (ph Box2D) CreateSquare(halfSize, centerX, centerY float64, d BodyDef) Body
 	body.SetTransform(tr.P, tr.Q)
 	// this is where a real body is
 	//body.ApplyForce()
+
+	shape := b2.DefaultShapeDef()
+	shape.Density = float32(d.Density)
+	shape.Material.Restitution = float32(d.Elasticity)
+	shape.Material.Friction = float32(d.Friction)
+	body.CreatePolygonShape(shape, b2.MakeSquare(float32(halfSize)))
+
+	return &b2Body{body: body}
+}
+
+func (ph Box2D) CreateStaticTile(halfSize, centerX, centerY float64, d BodyDef) Body {
+	var tr b2.Transform
+	tr.P.X = float32(centerX)
+	tr.P.Y = float32(centerY)
+	tr.Q.C = 1
+
+	def := b2.DefaultBodyDef()
+	def.Type1 = b2.StaticBody
+
+	body := ph.World.CreateBody(def)
+	body.SetTransform(tr.P, tr.Q)
 
 	shape := b2.DefaultShapeDef()
 	shape.Density = float32(d.Density)

@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"strings"
 	"time"
 
 	higher_order "github.com/doby162/go-higher-order"
@@ -21,8 +22,8 @@ import (
 )
 
 const (
-	screenWidth  = 1200
-	screenHeight = 800
+	screenWidth  = 1280
+	screenHeight = 832
 )
 
 type Game struct{}
@@ -128,7 +129,7 @@ func main() {
 
 	var bodies []Body
 
-	floor := BodyDef{Elasticity: 0.1, Friction: 0.9, Density: 1}
+	tile := BodyDef{Elasticity: 0.1, Friction: 0.9, Density: 1}
 	box := BodyDef{Elasticity: 0.25, Friction: 0.5, Density: 1}
 	const Layers = 20
 
@@ -142,7 +143,14 @@ func main() {
 		}
 	}
 
-	bodies = append(bodies, physics.CreateStaticLine(0, 600, 1000, 600, floor))
+	for rowIndex, row := range strings.Split(scene01, "\n") {
+		for colIndex, col := range row {
+			if col == '1' {
+				log.Println(float64(32 + (64 * rowIndex)))
+				bodies = append(bodies, physics.CreateStaticTile(0.5, float64(32+(64*colIndex)), float64(32+(64*rowIndex)), tile))
+			}
+		}
+	}
 
 	tom.body = physics.CreateSquare(1, 500, 5, box)
 	bodies = append(bodies, tom.body)
