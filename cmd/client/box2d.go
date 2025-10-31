@@ -130,7 +130,7 @@ func (ph Box2D) Draw(screen *ebiten.Image, toScreen ebiten.GeoM) {
 		g.Translate(float64(tr.P.X), float64(tr.P.Y))
 		g.Concat(toScreen)
 
-		x, y := toScreen.Apply(0, 0)
+		x, y := toScreen.Apply(float64(tr.P.X), float64(tr.P.Y))
 		r, _ := toScreen.Apply(float64(radius), 0)
 
 		var p vector.Path
@@ -142,6 +142,7 @@ func (ph Box2D) Draw(screen *ebiten.Image, toScreen ebiten.GeoM) {
 
 	draw.DrawSolidCapsule = func(p1 b2.Vec2, p2 b2.Vec2, radius float32, color b2.HexColor) {
 		// TODO
+		// Why bother though, caps are treated like circles somehow
 	}
 
 	draw.DrawTransform = func(transform b2.Transform) {
