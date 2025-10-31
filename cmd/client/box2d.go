@@ -192,6 +192,7 @@ func (ph Box2D) CreateSquare(halfSize, centerX, centerY float64, d BodyDef) Body
 	tr.Q.C = 1
 
 	def := b2.DefaultBodyDef()
+	def.LinearDamping = 0.5 // TODO: This should be a settable parameter that is passed in
 	def.Type1 = b2.DynamicBody
 	body := ph.World.CreateBody(def)
 	body.SetTransform(tr.P, tr.Q)

@@ -4,10 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/websocket"
-	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	b2 "github.com/oliverbestmann/box2d-go"
 	"image"
 	"log"
 	"log/slog"
@@ -16,6 +12,11 @@ import (
 	"os/signal"
 	"runtime"
 	"strings"
+
+	"github.com/gorilla/websocket"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	b2 "github.com/oliverbestmann/box2d-go"
 )
 
 const (
@@ -57,20 +58,20 @@ func (g *Game) Update() error {
 
 	checkKey(ebiten.KeyA, func() {
 		tom.body.ApplyForce(b2.Vec2{
-			X: -1,
+			X: -0.1,
 			Y: 0,
 		})
 	})
 	checkKey(ebiten.KeyD, func() {
 		tom.body.ApplyForce(b2.Vec2{
-			X: 1,
+			X: 0.1,
 			Y: 0,
 		})
 	})
 	checkKey(ebiten.KeyW, func() {
 		tom.body.ApplyForce(b2.Vec2{
 			X: 0,
-			Y: -5,
+			Y: -0.9,
 		})
 	})
 
@@ -130,7 +131,7 @@ func main() {
 	var bodies []Body
 
 	tile := BodyDef{Elasticity: 0.1, Friction: 0.9, Density: 1}
-	box := BodyDef{Elasticity: 0.25, Friction: 0.5, Density: 1}
+	box := BodyDef{Elasticity: 0.25, Friction: 0.0, Density: 1}
 
 	for rowIndex, row := range strings.Split(scene01, "\n") {
 		for colIndex, col := range row {
