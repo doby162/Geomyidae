@@ -12,11 +12,12 @@ import (
 	"os/signal"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	b2 "github.com/oliverbestmann/box2d-go"
+	"github.com/oliverbestmann/box2d-go"
 )
 
 const (
@@ -41,11 +42,17 @@ var others map[string]*guy
 var tom = guy{}
 var heldKeys []ebiten.Key
 var releasedKeys []ebiten.Key
-var move = 10.0
-var jump = 25.0
+var move = float32(10.0)
+var jump = float32(500.0)
+var deltaJump float64
+
+var prevTime time.Time
 
 func (g *Game) Update() error {
-	physics.Step(1, 1) // needs delta time
+	deltaTime := time.Now().Sub(prevTime).Seconds()
+	deltaJump += deltaTime
+	prevTime = time.Now()
+	physics.Step(deltaTime, 1)
 	prevPos := struct {
 		x, y float64
 	}{tom.x, tom.y}
@@ -58,21 +65,24 @@ func (g *Game) Update() error {
 
 	checkKey(ebiten.KeyA, func() {
 		tom.body.ApplyForce(b2.Vec2{
-			X: -0.1,
+			X: -move,
 			Y: 0,
 		})
 	})
 	checkKey(ebiten.KeyD, func() {
 		tom.body.ApplyForce(b2.Vec2{
-			X: 0.1,
+			X: move,
 			Y: 0,
 		})
 	})
 	checkKey(ebiten.KeyW, func() {
-		tom.body.ApplyForce(b2.Vec2{
-			X: 0,
-			Y: -0.9,
-		})
+		if deltaJump > 2 {
+			deltaJump = 0
+			tom.body.ApplyForce(b2.Vec2{
+				X: 0,
+				Y: -jump,
+			})
+		}
 	})
 
 	newPos := struct {
@@ -125,8 +135,9 @@ func main() {
 	tom.name = generateRandomString(16)
 
 	others = make(map[string]*guy) // initialize map
+	prevTime = time.Now()
 
-	physics = b2New(0.5)
+	physics = b2New(9.8)
 
 	var bodies []Body
 
@@ -142,7 +153,7 @@ func main() {
 		}
 	}
 
-	tom.body = physics.CreateSquare(0.5, 3, 3, box)
+	tom.body = physics.CreateSquare(0.5, 3, 3, box, 1, 0.1)
 	bodies = append(bodies, tom.body)
 
 	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/ws"}

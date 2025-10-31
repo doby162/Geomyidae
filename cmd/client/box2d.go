@@ -27,7 +27,7 @@ type BodyDef struct {
 type Physics interface {
 	Draw(screen *ebiten.Image, toScreen ebiten.GeoM)
 	Step(dt float64, subSteps int)
-	CreateSquare(halfSize, centerX, centerY float64, def BodyDef) Body
+	CreateSquare(halfSize, centerX, centerY float64, def BodyDef, fixedRotation uint8, damp float32) Body
 	CreateStaticLine(x0, y0, x1, y1 float64, def BodyDef) Body
 	CreateStaticTile(halfSize, centerX, centerY float64, def BodyDef) Body
 }
@@ -185,20 +185,18 @@ func toColorScale(h b2.HexColor) ebiten.ColorScale {
 	return c
 }
 
-func (ph Box2D) CreateSquare(halfSize, centerX, centerY float64, d BodyDef) Body {
+func (ph Box2D) CreateSquare(halfSize, centerX, centerY float64, d BodyDef, fixedRotation uint8, damp float32) Body {
 	var tr b2.Transform
 	tr.P.X = float32(centerX)
 	tr.P.Y = float32(centerY)
 	tr.Q.C = 1
 
 	def := b2.DefaultBodyDef()
-	def.LinearDamping = 0.5 // TODO: This should be a settable parameter that is passed in
+	def.LinearDamping = damp
 	def.Type1 = b2.DynamicBody
 	body := ph.World.CreateBody(def)
 	body.SetTransform(tr.P, tr.Q)
-	// this is where a real body is
-	//body.ApplyForce()
-
+	body.SetFixedRotation(fixedRotation)
 	shape := b2.DefaultShapeDef()
 	shape.Density = float32(d.Density)
 	shape.Material.Restitution = float32(d.Elasticity)
