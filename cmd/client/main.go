@@ -43,7 +43,7 @@ var tom = guy{}
 var heldKeys []ebiten.Key
 var releasedKeys []ebiten.Key
 var move = float32(10.0)
-var jump = float32(500.0)
+var jump = float32(8.0)
 var deltaJump float64
 
 var prevTime time.Time
@@ -78,7 +78,8 @@ func (g *Game) Update() error {
 	checkKey(ebiten.KeyW, func() {
 		if deltaJump > 2 {
 			deltaJump = 0
-			tom.body.ApplyForce(b2.Vec2{
+			// this should really be an impulse not a force.
+			tom.body.ApplyImpulse(b2.Vec2{
 				X: 0,
 				Y: -jump,
 			})

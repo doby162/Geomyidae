@@ -12,6 +12,7 @@ import (
 
 type Body interface {
 	ApplyForce(b2.Vec2)
+	ApplyImpulse(b2.Vec2)
 	Position() (float64, float64)
 	Rotation() float64
 	SetVelocity(x, y float64)
@@ -275,4 +276,7 @@ func (b *b2Body) SetPosition(x, y float64) {
 
 func (b *b2Body) ApplyForce(force b2.Vec2) {
 	b.body.ApplyForce(force, b.body.GetPosition(), 1)
+}
+func (b *b2Body) ApplyImpulse(force b2.Vec2) {
+	b.body.ApplyLinearImpulse(force, b.body.GetPosition(), 1)
 }
