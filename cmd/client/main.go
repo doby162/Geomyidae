@@ -51,8 +51,8 @@ func (g *Game) Update() error {
 	}{tom.x, tom.y}
 
 	x, y := tom.body.Position()
-	tom.x = x
-	tom.y = y
+	tom.x = x * 64
+	tom.y = y * 64
 
 	handleKeyState()
 
@@ -98,9 +98,10 @@ type updateMsg struct {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(64, 64)
 	physics.Draw(screen, op.GeoM)
-	x, y := tom.body.Position()
-	op.GeoM.Translate(x, y)
+	op = &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(tom.x-32, tom.y-32g)
 	screen.DrawImage(tom.sprite, op)
 	for _, ourGuy := range others {
 		op := &ebiten.DrawImageOptions{}
@@ -145,12 +146,12 @@ func main() {
 		for colIndex, col := range row {
 			if col == '1' {
 				log.Println(float64(32 + (64 * rowIndex)))
-				bodies = append(bodies, physics.CreateStaticTile(0.5, float64(32+(64*colIndex)), float64(32+(64*rowIndex)), tile))
+				bodies = append(bodies, physics.CreateStaticTile(0.5, float64(colIndex)+0.5, float64(rowIndex)+0.5, tile))
 			}
 		}
 	}
 
-	tom.body = physics.CreateSquare(1, 500, 5, box)
+	tom.body = physics.CreateSquare(0.5, 3, 3, box)
 	bodies = append(bodies, tom.body)
 
 	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/ws"}
