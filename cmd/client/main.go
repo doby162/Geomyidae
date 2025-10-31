@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	higher_order "github.com/doby162/go-higher-order"
 	"github.com/gorilla/websocket"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -36,7 +35,7 @@ type guy struct {
 	body       Body
 }
 
-var others []*guy
+var others map[string]*guy
 
 var tom = guy{}
 var heldKeys []ebiten.Key
@@ -124,6 +123,8 @@ func main() {
 	tom.sprite = ebiten.NewImageFromImage(bert)
 	tom.name = generateRandomString(16)
 
+	others = make(map[string]*guy) // initialize map
+
 	physics = b2New(0.5)
 
 	var bodies []Body
@@ -170,29 +171,21 @@ func main() {
 				return
 			}
 			m := updateMsg{}
-			var ourGuy *guy
 			err = json.Unmarshal(message, &m)
 			if err != nil {
 				slog.Error("unmarshal:", err)
 			} else if m.Name == tom.name {
-			} else if higher_order.AnySlice(others, func(g *guy) bool {
-				if g.name == m.Name {
-					ourGuy = g
-					return true
-				}
-				return false
-			}) { // if we have the guy already
+			} else if others[m.Name] != nil { // if we have the guy already
 				slog.Debug("found our guy")
-				ourGuy.x = m.X
-				ourGuy.y = m.Y
+				others[m.Name].x = m.X
+				others[m.Name].y = m.Y
 				//ourGuy.body.SetPosition((m.X/64)+32, (m.Y/64)+32)
 			} else { //  if we  have to make a new guy
 				slog.Debug("make a new guy")
 				//bod := physics.CreateSquare(0.5, (m.X/64)+32, (m.Y/64)+32, box)
 				//bodies = append(bodies, bod) // we don't actually do anything with this yet
 				//ourGuy = &guy{x: m.X, y: m.Y, sprite: tom.sprite, name: m.Name, body: bod}
-				ourGuy = &guy{x: m.X, y: m.Y, sprite: tom.sprite, name: m.Name}
-				others = append(others, ourGuy)
+				others[m.Name] = &guy{x: m.X, y: m.Y, sprite: tom.sprite, name: m.Name}
 			}
 			slog.Debug("recv: %s", message)
 		}
