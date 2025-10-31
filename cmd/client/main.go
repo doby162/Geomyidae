@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	higher_order "github.com/doby162/go-higher-order"
+	"github.com/gorilla/websocket"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	b2 "github.com/oliverbestmann/box2d-go"
 	"image"
 	"log"
@@ -13,12 +17,6 @@ import (
 	"os/signal"
 	"runtime"
 	"strings"
-	"time"
-
-	higher_order "github.com/doby162/go-higher-order"
-	"github.com/gorilla/websocket"
-	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 const (
@@ -209,29 +207,7 @@ func main() {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	go func() {
-		for {
-			select {
-			case <-done:
-				return
-			case <-interrupt:
-				slog.Debug("interrupt")
-
-				// Cleanly close the connection by sending a close message and then
-				// waiting (with timeout) for the server to close the connection.
-				err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-				if err != nil {
-					slog.Debug("write close:", err)
-					return
-				}
-				select {
-				case <-done:
-				case <-time.After(time.Second):
-				}
-				return
-			}
-		}
-	}()
+	go handleChannels(done, interrupt, c)
 
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.SetWindowSize(screenWidth, screenHeight)

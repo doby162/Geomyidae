@@ -2,9 +2,12 @@ package main
 
 import (
 	"github.com/doby162/go-higher-order"
+	"github.com/gorilla/websocket"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"log/slog"
 	"math/rand"
+	"os"
 	"time"
 )
 
@@ -36,4 +39,30 @@ func generateRandomString(length int) string {
 		b[i] = charset[seededRand.Intn(len(charset))]
 	}
 	return string(b)
+}
+
+// copy pasta from websocket example code
+// not fully clear on what this actually does for us
+func handleChannels(done chan struct{}, interrupt chan os.Signal, c *websocket.Conn) {
+	for {
+		select {
+		case <-done:
+			return
+		case <-interrupt:
+			slog.Debug("interrupt")
+
+			// Cleanly close the connection by sending a close message and then
+			// waiting (with timeout) for the server to close the connection.
+			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+			if err != nil {
+				slog.Debug("write close:", err)
+				return
+			}
+			select {
+			case <-done:
+			case <-time.After(time.Second):
+			}
+			return
+		}
+	}
 }
