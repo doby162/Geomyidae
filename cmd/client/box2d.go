@@ -131,8 +131,9 @@ func (ph Box2D) Draw(screen *ebiten.Image, toScreen ebiten.GeoM) {
 		g.Concat(toScreen)
 
 		x, y := toScreen.Apply(float64(tr.P.X), float64(tr.P.Y))
-		r, _ := toScreen.Apply(float64(radius), 0)
-
+		//r, _ := toScreen.Apply(float64(radius), 0)
+		r := radius * 64 // not sure why toScreen.Apply doesn't work
+		// it scales the size of the circle by the camera offset... not a problem for squares
 		var p vector.Path
 		p.Arc(float32(x), float32(y), float32(r), 0, 2*math.Pi, vector.Clockwise)
 

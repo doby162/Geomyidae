@@ -23,6 +23,8 @@ import (
 const (
 	screenWidth  = 1280
 	screenHeight = 832
+	tileSize     = 64
+	tileHalf     = 32
 )
 
 type Game struct{}
@@ -58,8 +60,11 @@ func (g *Game) Update() error {
 	}{tom.x, tom.y}
 
 	x, y := tom.body.Position()
-	tom.x = x * 64
-	tom.y = y * 64
+	tom.x = x * tileSize
+	tom.y = y * tileSize
+
+	cameraX = tom.x - screenWidth/2
+	cameraY = tom.y - screenHeight/2 - (2 * tileSize)
 
 	handleKeyState()
 
@@ -107,16 +112,21 @@ type updateMsg struct {
 	Y    float64 `json:"y"`
 }
 
+var cameraX float64
+var cameraY float64
+
 func (g *Game) Draw(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Scale(64, 64)
+	op.GeoM.Scale(tileSize, tileSize)
+	op.GeoM.Translate(-cameraX, -cameraY)
 	physics.Draw(screen, op.GeoM)
 	op = &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(tom.x-32, tom.y-32)
+	op.GeoM.Translate(-cameraX, -cameraY)
+	op.GeoM.Translate(tom.x-tileHalf, tom.y-tileHalf)
 	screen.DrawImage(tom.sprite, op)
 	for _, ourGuy := range others {
 		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(ourGuy.x-32, ourGuy.y-32)
+		op.GeoM.Translate(ourGuy.x-tileHalf, ourGuy.y-tileHalf)
 		screen.DrawImage(ourGuy.sprite, op)
 	}
 	ebitenutil.DebugPrint(screen, "Tom's position: "+fmt.Sprintf("%.2f, %.2f, goroutines:%v", tom.x, tom.y, runtime.NumGoroutine()))
@@ -148,7 +158,7 @@ func main() {
 	for rowIndex, row := range strings.Split(scene01, "\n") {
 		for colIndex, col := range row {
 			if col == '1' {
-				log.Println(float64(32 + (64 * rowIndex)))
+				log.Println(float64(tileHalf + (tileSize * rowIndex)))
 				bodies = append(bodies, physics.CreateStaticTile(0.5, float64(colIndex)+0.5, float64(rowIndex)+0.5, tile))
 			}
 		}
