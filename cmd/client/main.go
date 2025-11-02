@@ -17,7 +17,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/oliverbestmann/box2d-go"
+	b2 "github.com/oliverbestmann/box2d-go"
 )
 
 const (

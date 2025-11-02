@@ -1,14 +1,15 @@
 package main
 
 import (
-	"github.com/doby162/go-higher-order"
-	"github.com/gorilla/websocket"
-	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"log/slog"
 	"math/rand"
 	"os"
 	"time"
+
+	higher_order "github.com/doby162/go-higher-order"
+	"github.com/gorilla/websocket"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 // key checks take a function to run if the key is held
