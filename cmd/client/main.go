@@ -14,6 +14,8 @@ import (
 	"strings"
 	"time"
 
+	assets "Geomyidae"
+
 	"github.com/gorilla/websocket"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -144,9 +146,14 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 
 var physics Physics
 
+// assets are embedded in package "Geomyidae/assets"
+
 func main() {
 	//slog.SetLogLoggerLevel(slog.LevelDebug) // uncomment for verbose logs
-	beet, _ := os.ReadFile("assets/img/placeholderSprite.png")
+	beet, err := assets.FS.ReadFile("cmd/assets/img/placeholderSprite.png")
+	if err != nil {
+		log.Fatal(err)
+	}
 	bert, _, _ := image.Decode(bytes.NewReader(beet))
 	tom.sprite = ebiten.NewImageFromImage(bert)
 	tom.name = generateRandomString(16)
