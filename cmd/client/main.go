@@ -66,6 +66,11 @@ func (g *Game) Update() error {
 	cameraX = tom.x - screenWidth/2
 	cameraY = tom.y - screenHeight/2 - (2 * tileSize)
 
+	for _, other := range others {
+		// very important to do this in the same thread as physics.step to avoid concurrent modification
+		other.body.SetPosition(other.x/64, other.y/64)
+	}
+
 	handleKeyState()
 
 	checkKey(ebiten.KeyA, func() {
@@ -126,6 +131,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	screen.DrawImage(tom.sprite, op)
 	for _, ourGuy := range others {
 		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(-cameraX, -cameraY)
 		op.GeoM.Translate(ourGuy.x-tileHalf, ourGuy.y-tileHalf)
 		screen.DrawImage(ourGuy.sprite, op)
 	}
@@ -164,7 +170,7 @@ func main() {
 		}
 	}
 
-	tom.body = physics.CreateSquare(0.5, 3, 3, box, 1, 0.1)
+	tom.body = physics.CreatePlayerCollider(0.5, 3, 3, box, 1, 0.1)
 	bodies = append(bodies, tom.body)
 
 	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/ws"}
@@ -202,13 +208,11 @@ func main() {
 				slog.Debug("found our guy")
 				others[m.Name].x = m.X
 				others[m.Name].y = m.Y
-				//ourGuy.body.SetPosition((m.X/64)+32, (m.Y/64)+32)
 			} else { //  if we  have to make a new guy
 				slog.Debug("make a new guy")
-				//bod := physics.CreateSquare(0.5, (m.X/64)+32, (m.Y/64)+32, box)
-				//bodies = append(bodies, bod) // we don't actually do anything with this yet
-				//ourGuy = &guy{x: m.X, y: m.Y, sprite: tom.sprite, name: m.Name, body: bod}
-				others[m.Name] = &guy{x: m.X, y: m.Y, sprite: tom.sprite, name: m.Name}
+				bod := physics.CreateNetworkCollider(0.5, 3, 3, box, 1, 0.1)
+				bodies = append(bodies, bod) // we don't actually do anything with this yet
+				others[m.Name] = &guy{x: m.X, y: m.Y, sprite: tom.sprite, name: m.Name, body: bod}
 			}
 			slog.Debug("recv: %s", message)
 		}

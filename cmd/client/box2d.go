@@ -28,9 +28,10 @@ type BodyDef struct {
 type Physics interface {
 	Draw(screen *ebiten.Image, toScreen ebiten.GeoM)
 	Step(dt float64, subSteps int)
-	CreateSquare(halfSize, centerX, centerY float64, def BodyDef, fixedRotation uint8, damp float32) Body
+	CreatePlayerCollider(halfSize, centerX, centerY float64, def BodyDef, fixedRotation uint8, damp float32) Body
 	CreateStaticLine(x0, y0, x1, y1 float64, def BodyDef) Body
 	CreateStaticTile(halfSize, centerX, centerY float64, def BodyDef) Body
+	CreateNetworkCollider(halfSize, centerX, centerY float64, def BodyDef, fixedRotation uint8, damp float32) Body
 }
 
 func b2New(gravity float64) Physics {
@@ -188,7 +189,7 @@ func toColorScale(h b2.HexColor) ebiten.ColorScale {
 	return c
 }
 
-func (ph Box2D) CreateSquare(halfSize, centerX, centerY float64, d BodyDef, fixedRotation uint8, damp float32) Body {
+func (ph Box2D) CreatePlayerCollider(halfSize, centerX, centerY float64, d BodyDef, fixedRotation uint8, damp float32) Body {
 	var tr b2.Transform
 	tr.P.X = float32(centerX)
 	tr.P.Y = float32(centerY)
@@ -197,6 +198,31 @@ func (ph Box2D) CreateSquare(halfSize, centerX, centerY float64, d BodyDef, fixe
 	def := b2.DefaultBodyDef()
 	def.LinearDamping = damp
 	def.Type1 = b2.DynamicBody
+	body := ph.World.CreateBody(def)
+	body.SetTransform(tr.P, tr.Q)
+	body.SetFixedRotation(fixedRotation)
+	shape := b2.DefaultShapeDef()
+	shape.Density = float32(d.Density)
+	shape.Material.Restitution = float32(d.Elasticity)
+	shape.Material.Friction = float32(d.Friction)
+	body.CreateCapsuleShape(shape, b2.Capsule{
+		Center1: b2.Vec2{X: float32(0), Y: float32(0)},
+		Center2: b2.Vec2{X: float32(0), Y: float32(0)},
+		Radius:  float32(halfSize),
+	})
+
+	return &b2Body{body: body}
+}
+
+func (ph Box2D) CreateNetworkCollider(halfSize, centerX, centerY float64, d BodyDef, fixedRotation uint8, damp float32) Body {
+	var tr b2.Transform
+	tr.P.X = float32(centerX)
+	tr.P.Y = float32(centerY)
+	tr.Q.C = 1
+
+	def := b2.DefaultBodyDef()
+	def.LinearDamping = damp
+	def.Type1 = b2.StaticBody
 	body := ph.World.CreateBody(def)
 	body.SetTransform(tr.P, tr.Q)
 	body.SetFixedRotation(fixedRotation)
@@ -274,10 +300,7 @@ func (b *b2Body) SetVelocity(x, y float64) {
 }
 func (b *b2Body) SetPosition(x, y float64) {
 	v := b2.Vec2{X: float32(x), Y: float32(y)}
-	b.body.SetTransform(v, b2.Rot{
-		C: 0,
-		S: 0,
-	})
+	b.body.SetTransform(v, b.body.GetRotation())
 }
 
 func (b *b2Body) ApplyForce(force b2.Vec2) {
