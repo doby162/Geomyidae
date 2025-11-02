@@ -98,7 +98,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 }
 
 func main() {
-	slog.SetLogLoggerLevel(slog.LevelDebug)
+	//slog.SetLogLoggerLevel(slog.LevelDebug)
 	beet, _ := os.ReadFile("assets/img/placeholderSprite.png")
 	bert, _, _ := image.Decode(bytes.NewReader(beet))
 	sprites = make(map[string]*ebiten.Image)
