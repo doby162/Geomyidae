@@ -36,7 +36,7 @@ type guy struct {
 	sprite     *ebiten.Image
 	jumpFrames int
 	canJump    bool
-	sock       *websocket.Conn
+	sock       WSConn
 	name       string
 	body       Body
 }
@@ -182,25 +182,25 @@ func main() {
 	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/ws"}
 	slog.Debug("connecting to %s", u.String())
 
-	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	conn, err := DialWS(u.String())
 	if err != nil {
 		log.Fatal("dial:", err)
 	}
-	defer func(c *websocket.Conn) {
+	defer func(c WSConn) {
 		err := c.Close()
 		if err != nil {
 			slog.Error(err.Error())
 		}
-	}(c)
+	}(conn)
 
-	tom.sock = c
+	tom.sock = conn
 
 	done := make(chan struct{})
 
 	go func() {
 		defer close(done)
 		for {
-			_, message, err := c.ReadMessage()
+			_, message, err := conn.ReadMessage()
 			if err != nil {
 				slog.Error("read:", err)
 				return
@@ -227,7 +227,7 @@ func main() {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	go handleChannels(done, interrupt, c)
+	go handleChannels(done, interrupt, conn)
 
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.SetWindowSize(screenWidth, screenHeight)
