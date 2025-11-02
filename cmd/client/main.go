@@ -171,7 +171,6 @@ func main() {
 	for rowIndex, row := range strings.Split(scene01, "\n") {
 		for colIndex, col := range row {
 			if col == '1' {
-				log.Println(float64(tileHalf + (tileSize * rowIndex)))
 				bodies = append(bodies, physics.CreateStaticTile(0.5, float64(colIndex)+0.5, float64(rowIndex)+0.5, tile))
 			}
 		}
