@@ -61,7 +61,7 @@ func main() {
 		}
 		for _, networkPlayer := range playerList.Players {
 			x, y := networkPlayer.Body.Position()
-			data.Objects = append(data.Objects, GameObject{x, y, "player_01"})
+			data.Objects = append(data.Objects, GameObject{x, y, networkPlayer.Sprite})
 		}
 		msg, _ := json.Marshal(data)
 		hub.Broadcast <- msg

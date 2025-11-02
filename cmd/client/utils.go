@@ -1,14 +1,14 @@
 package main
 
 import (
+	"log/slog"
+	"os"
+	"time"
+
 	"github.com/doby162/go-higher-order"
 	"github.com/gorilla/websocket"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"log/slog"
-	"math/rand"
-	"os"
-	"time"
 )
 
 // key checks take a function to run if the key is held
@@ -23,22 +23,12 @@ func handleKeyState() {
 	// keys are added to held when pressed.
 	// keys are removed when released
 	heldKeys = inpututil.AppendPressedKeys(heldKeys)
-	releasedKeys = inpututil.AppendJustReleasedKeys([]ebiten.Key{})
+	releasedKeys := inpututil.AppendJustReleasedKeys([]ebiten.Key{})
 	for _, key := range releasedKeys {
 		heldKeys = higher_order.FilterSlice(heldKeys, func(key2 ebiten.Key) bool {
 			return key != key2
 		})
 	}
-}
-
-func generateRandomString(length int) string {
-	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	seededRand := rand.New(rand.NewSource(time.Now().UnixNano()))
-	b := make([]byte, length)
-	for i := range b {
-		b[i] = charset[seededRand.Intn(len(charset))]
-	}
-	return string(b)
 }
 
 // copy pasta from websocket example code

@@ -20,7 +20,7 @@ func NewList(physics box.Physics) *List {
 }
 
 type NetworkPlayer struct {
-	sprite   string
+	Sprite   string
 	canJump  bool
 	name     string
 	Body     box.Body
@@ -28,19 +28,23 @@ type NetworkPlayer struct {
 }
 
 func (l *List) NewNetworkPlayer() *NetworkPlayer {
+	log.Println("New Network Player")
 	l.writeAccess.Lock()
 	defer l.writeAccess.Unlock()
 	name := generateRandomString(10)
 	bd := box.BodyDef{Elasticity: 0.25, Friction: 0.0, Density: 1}
 
 	body := l.physics.CreatePlayerCollider(0.5, 3, 3, bd, 1, 0.1)
-	l.Players[name] = &NetworkPlayer{sprite: "sprite", HeldKeys: []string{}, name: name, canJump: true, Body: body}
+	l.Players[name] = &NetworkPlayer{sprite: "player_01", HeldKeys: []string{}, name: name, canJump: true, Body: body}
 	return l.Players[name]
 }
 
 func (p *NetworkPlayer) ApplyKeys() {
 	// todo
-	log.Println(p.HeldKeys)
+	for _, key := range p.HeldKeys {
+		log.Printf("Applying key: %s", key)
+	}
+
 	return
 }
 
