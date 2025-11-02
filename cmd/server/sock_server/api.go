@@ -2,13 +2,17 @@ package sock_server
 
 import (
 	"log"
+	"math/rand"
 	"net/http"
+	"time"
 
+	"Geomyidae/cmd/server/player"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-func Api() error {
+func Api(playerList *player.List) error {
+	log.Println(playerList.Players)
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	hub := newHub()
