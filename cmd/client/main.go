@@ -83,10 +83,10 @@ var socket *websocket.Conn
 func (g *Game) Draw(screen *ebiten.Image) {
 	mu.Lock()
 	defer mu.Unlock()
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(-cameraX, -cameraY)
 	for _, object := range world.Objects {
-		op.GeoM.Translate(object.X*tileSize, object.Y*tileSize)
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(-cameraX, -cameraY)
+		op.GeoM.Translate(object.X*tileSize-tileHalf, object.Y*tileSize-tileHalf)
 		screen.DrawImage(sprites[object.Sprite], op)
 	}
 
@@ -103,7 +103,7 @@ func main() {
 	bert, _, _ := image.Decode(bytes.NewReader(beet))
 	sprites = make(map[string]*ebiten.Image)
 	sprites["player_01"] = ebiten.NewImageFromImage(bert)
-	sprites["tiles_01"] = ebiten.NewImageFromImage(bert)
+	sprites["tile_01"] = ebiten.NewImageFromImage(bert)
 
 	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/ws"}
 	slog.Debug("connecting to %s", u.String())

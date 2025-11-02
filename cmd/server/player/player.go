@@ -35,7 +35,7 @@ func (l *List) NewNetworkPlayer() *NetworkPlayer {
 	bd := box.BodyDef{Elasticity: 0.25, Friction: 0.0, Density: 1}
 
 	body := l.physics.CreatePlayerCollider(0.5, 3, 3, bd, 1, 0.1)
-	l.Players[name] = &NetworkPlayer{sprite: "player_01", HeldKeys: []string{}, name: name, canJump: true, Body: body}
+	l.Players[name] = &NetworkPlayer{Sprite: "player_01", HeldKeys: []string{}, name: name, canJump: true, Body: body}
 	return l.Players[name]
 }
 

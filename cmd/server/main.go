@@ -57,7 +57,7 @@ func main() {
 		data := WorldData{}
 		for _, object := range objectList {
 			x, y := object.Position()
-			data.Objects = append(data.Objects, GameObject{x, y, "tile_00"})
+			data.Objects = append(data.Objects, GameObject{x, y, "tile_01"})
 		}
 		for _, networkPlayer := range playerList.Players {
 			x, y := networkPlayer.Body.Position()
