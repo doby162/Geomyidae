@@ -22,5 +22,5 @@ https://ebitengine.org/en/documents/install.html#Confirming_your_environment
 Assuming you have Go installed, and maybe you ran the "Confirming your environment" command, the following should get you going:
 
 1. Clone the repo.
-2. `go run cmd/server/` will launch an instance of the server.
-3. `go run cmd/client/` will launch an instance of the client.
+2. `go run ./cmd/server/` will launch an instance of the server.
+3. `go run ./cmd/client/` will launch an instance of the client.
