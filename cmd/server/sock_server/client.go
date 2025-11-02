@@ -1,7 +1,9 @@
 package sock_server
 
 import (
+	"Geomyidae/cmd/server/player"
 	"bytes"
+	"encoding/json"
 	"log"
 	"net/http"
 	"time"
@@ -41,7 +43,12 @@ type Client struct {
 	conn *websocket.Conn
 
 	// Buffered channel of outbound messages.
-	send chan []byte
+	send   chan []byte
+	player *player.NetworkPlayer
+}
+
+type keysStruct struct {
+	Keys []string `json:"keys"`
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -66,7 +73,9 @@ func (c *Client) readPump() {
 			break
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		c.hub.broadcast <- message
+		keys := keysStruct{}
+		err = json.Unmarshal(message, &keys)
+		c.player.HeldKeys = keys.Keys
 	}
 }
 

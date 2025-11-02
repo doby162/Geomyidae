@@ -23,24 +23,24 @@ type NetworkPlayer struct {
 	sprite   string
 	canJump  bool
 	name     string
-	body     box.Body
-	heldKeys []string
+	Body     box.Body
+	HeldKeys []string
 }
 
-func (l *List) NewNetworkPlayer(sprite string) *NetworkPlayer {
+func (l *List) NewNetworkPlayer() *NetworkPlayer {
 	l.writeAccess.Lock()
 	defer l.writeAccess.Unlock()
 	name := generateRandomString(10)
 	bd := box.BodyDef{Elasticity: 0.25, Friction: 0.0, Density: 1}
 
 	body := l.physics.CreatePlayerCollider(0.5, 3, 3, bd, 1, 0.1)
-	l.Players[name] = &NetworkPlayer{sprite: sprite, heldKeys: []string{}, name: name, canJump: true, body: body}
+	l.Players[name] = &NetworkPlayer{sprite: "sprite", HeldKeys: []string{}, name: name, canJump: true, Body: body}
 	return l.Players[name]
 }
 
 func (p *NetworkPlayer) ApplyKeys() {
 	// todo
-	log.Println(p.heldKeys)
+	log.Println(p.HeldKeys)
 	return
 }
 

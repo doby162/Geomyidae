@@ -4,7 +4,8 @@ import (
 	"Geomyidae/cmd/server/box"
 	"Geomyidae/cmd/server/player"
 	"Geomyidae/cmd/server/sock_server"
-	"log"
+	"encoding/json"
+	"strings"
 	"time"
 )
 
@@ -19,24 +20,70 @@ import (
 var physics box.Physics
 var prevTime time.Time
 
+type GameObject struct {
+	X      float64 `json:"x"`
+	Y      float64 `json:"y"`
+	Sprite string  `json:"sprite"`
+}
+type WorldData struct {
+	Objects []GameObject `json:"objects"`
+}
+
 func main() {
-	playerList := player.NewList(physics)
-	go func() {
-		err := sock_server.Api(playerList)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
-	prevTime = time.Now()
-
+	// instantiate state
 	physics = box.B2New(9.8)
+	playerList := player.NewList(physics)
+	var objectList []box.Body
 
+	tile := box.BodyDef{Elasticity: 0.1, Friction: 0.9, Density: 1}
+	for rowIndex, row := range strings.Split(scene01, "\n") {
+		for colIndex, col := range row {
+			if col == '1' {
+				objectList = append(objectList, physics.CreateStaticTile(0.5, float64(colIndex)+0.5, float64(rowIndex)+0.5, tile))
+			}
+		}
+	}
+	// kick off socket server
+	hub := sock_server.Api(playerList)
+
+	prevTime = time.Now()
 	for {
-		deltaTime := time.Now().Sub(prevTime).Seconds()
-		prevTime = time.Now()
-		physics.Step(deltaTime, 1)
 		for _, networkPlayer := range playerList.Players {
 			networkPlayer.ApplyKeys()
 		}
+		deltaTime := time.Now().Sub(prevTime).Seconds()
+		prevTime = time.Now()
+		physics.Step(deltaTime, 1)
+		data := WorldData{}
+		for _, object := range objectList {
+			x, y := object.Position()
+			data.Objects = append(data.Objects, GameObject{x, y, "tile_00"})
+		}
+		for _, networkPlayer := range playerList.Players {
+			x, y := networkPlayer.Body.Position()
+			data.Objects = append(data.Objects, GameObject{x, y, "player_01"})
+		}
+		msg, _ := json.Marshal(data)
+		hub.Broadcast <- msg
+		time.Sleep(15 * time.Millisecond)
 	}
 }
+
+const scene01 = "11111111111111111111111111111\n" +
+	"100000000000000000010000000000\n" +
+	"10000000000000000001000000001\n" +
+	"10000000000000000001000000001\n" +
+	"10000000000000111001000000001\n" +
+	"10000000000000000000000000001\n" +
+	"10001110000000000000000000001\n" +
+	"10000000000000000001000000001\n" +
+	"10000000000011100001000000001\n" +
+	"10000000000000000001000000001\n" +
+	"10000111000000000001000000001\n" +
+	"10000000000000000001000000001\n" +
+	"11111111111111111111111001111\n" +
+	"10000000000000000000000000001\n" +
+	"10000000000000000000000000001\n" +
+	"10000000000000000000011000001\n" +
+	"10000000000000000000000000001\n" +
+	"11111111111111111111111111111"
