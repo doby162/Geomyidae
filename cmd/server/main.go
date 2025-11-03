@@ -68,7 +68,7 @@ func main() {
 		playerList.WriteAccess.Unlock()
 		msg, _ := json.Marshal(data)
 		hub.Broadcast <- msg
-		time.Sleep(30 * time.Millisecond)
+		time.Sleep(50 * time.Millisecond)
 	}
 }
 

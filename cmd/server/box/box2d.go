@@ -1,12 +1,8 @@
-// Copied directly from https://github.com/oliverbestmann/box2d-go/blob/main/example/box2d.go
 package box
 
 import (
 	"math"
 
-	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 	b2 "github.com/oliverbestmann/box2d-go"
 )
 
@@ -26,7 +22,6 @@ type BodyDef struct {
 }
 
 type Physics interface {
-	Draw(screen *ebiten.Image, toScreen ebiten.GeoM)
 	Step(dt float64, subSteps int)
 	CreatePlayerCollider(halfSize, centerX, centerY float64, def BodyDef, fixedRotation uint8, damp float32) Body
 	CreateStaticLine(x0, y0, x1, y1 float64, def BodyDef) Body
@@ -51,142 +46,6 @@ type Box2D struct {
 
 func (ph Box2D) Step(dt float64, subSteps int) {
 	ph.World.Step(float32(dt), int32(subSteps))
-}
-
-func (ph Box2D) Draw(screen *ebiten.Image, toScreen ebiten.GeoM) {
-	var draw b2.DebugDraw
-
-	draw.DrawJoints = true
-	draw.DrawShapes = true
-	draw.DrawJointExtras = false
-	draw.DrawBounds = false
-	draw.DrawMass = false
-	draw.DrawBodyNames = false
-	draw.DrawGraphColors = false
-	draw.DrawContacts = false
-	draw.DrawContactNormals = true
-	draw.DrawContactImpulses = true
-	draw.DrawContactFeatures = false
-	draw.DrawFrictionImpulses = false
-	draw.DrawIslands = false
-
-	draw.DrawSegment = func(p1 b2.Vec2, p2 b2.Vec2, color b2.HexColor) {
-		x1, y1 := toScreen.Apply(float64(p1.X), float64(p1.Y))
-		x2, y2 := toScreen.Apply(float64(p2.X), float64(p2.Y))
-
-		var p vector.Path
-		p.MoveTo(float32(x1), float32(y1))
-		p.LineTo(float32(x2), float32(y2))
-
-		dop := vector.DrawPathOptions{ColorScale: toColorScale(color)}
-		vector.StrokePath(screen, &p, &vector.StrokeOptions{Width: 1}, &dop)
-	}
-
-	draw.DrawPolygon = func(vertices []b2.Vec2, color b2.HexColor) {
-		var p vector.Path
-
-		for _, v := range vertices {
-			x, y := toScreen.Apply(float64(v.X), float64(v.Y))
-			p.LineTo(float32(x), float32(y))
-		}
-		p.Close()
-
-		dop := vector.DrawPathOptions{ColorScale: toColorScale(color)}
-		vector.StrokePath(screen, &p, &vector.StrokeOptions{Width: 1}, &dop)
-	}
-
-	draw.DrawSolidPolygon = func(tr b2.Transform, vertices []b2.Vec2, radius float32, color b2.HexColor) {
-		var g ebiten.GeoM
-		g.Rotate(float64(tr.Q.Angle()))
-		g.Translate(float64(tr.P.X), float64(tr.P.Y))
-		g.Concat(toScreen)
-
-		var p vector.Path
-
-		for _, v := range vertices {
-			x, y := g.Apply(float64(v.X), float64(v.Y))
-			p.LineTo(float32(x), float32(y))
-		}
-
-		p.Close()
-
-		dop := vector.DrawPathOptions{ColorScale: toColorScale(color)}
-		vector.FillPath(screen, &p, nil, &dop)
-	}
-
-	draw.DrawCircle = func(center b2.Vec2, radius float32, color b2.HexColor) {
-		x, y := toScreen.Apply(float64(center.X), float64(center.Y))
-		r, _ := toScreen.Apply(float64(radius), 0)
-
-		var p vector.Path
-		p.Arc(float32(x), float32(y), float32(r), 0, 2*math.Pi, vector.Clockwise)
-
-		dop := vector.DrawPathOptions{ColorScale: toColorScale(color)}
-		vector.StrokePath(screen, &p, &vector.StrokeOptions{Width: 1}, &dop)
-	}
-
-	draw.DrawSolidCircle = func(tr b2.Transform, radius float32, color b2.HexColor) {
-		var g ebiten.GeoM
-		g.Rotate(float64(tr.Q.Angle()))
-		g.Translate(float64(tr.P.X), float64(tr.P.Y))
-		g.Concat(toScreen)
-
-		x, y := toScreen.Apply(float64(tr.P.X), float64(tr.P.Y))
-		//r, _ := toScreen.Apply(float64(radius), 0)
-		r := radius * 64 // not sure why toScreen.Apply doesn't work
-		// it scales the size of the circle by the camera offset... not a problem for squares
-		var p vector.Path
-		p.Arc(float32(x), float32(y), float32(r), 0, 2*math.Pi, vector.Clockwise)
-
-		dop := vector.DrawPathOptions{ColorScale: toColorScale(color)}
-		vector.FillPath(screen, &p, nil, &dop)
-	}
-
-	draw.DrawSolidCapsule = func(p1 b2.Vec2, p2 b2.Vec2, radius float32, color b2.HexColor) {
-		// TODO
-		// Why bother though, caps are treated like circles somehow
-	}
-
-	draw.DrawTransform = func(transform b2.Transform) {
-		x, y := toScreen.Apply(float64(transform.P.X), float64(transform.P.Y))
-
-		var p vector.Path
-		p.MoveTo(float32(x), float32(y))
-		p.LineTo(float32(x)+transform.Q.C*16, float32(x)+transform.Q.S*16)
-
-		p.MoveTo(float32(x), float32(y))
-		p.LineTo(float32(x)+-transform.Q.S*16, float32(x)+transform.Q.C*16)
-
-		dop := vector.DrawPathOptions{ColorScale: toColorScale(0x00ff00)}
-		vector.FillPath(screen, &p, nil, &dop)
-	}
-
-	draw.DrawPoint = func(c b2.Vec2, size float32, color b2.HexColor) {
-		x, y := toScreen.Apply(float64(c.X), float64(c.Y))
-
-		var p vector.Path
-		p.Arc(float32(x), float32(y), size, 0, 2*math.Pi, vector.Clockwise)
-
-		dop := vector.DrawPathOptions{ColorScale: toColorScale(color)}
-		vector.FillPath(screen, &p, nil, &dop)
-	}
-
-	draw.DrawString = func(p b2.Vec2, s string, color b2.HexColor) {
-		x, y := toScreen.Apply(float64(p.X), float64(p.Y))
-		ebitenutil.DebugPrintAt(screen, s, int(x), int(y))
-	}
-
-	ph.World.Draw(draw)
-}
-
-func toColorScale(h b2.HexColor) ebiten.ColorScale {
-	r := float32((h>>16)&0xff) / 255.0
-	g := float32((h>>8)&0xff) / 255.0
-	b := float32((h>>0)&0xff) / 255.0
-
-	var c ebiten.ColorScale
-	c.Scale(r, g, b, 1)
-	return c
 }
 
 func (ph Box2D) CreatePlayerCollider(halfSize, centerX, centerY float64, d BodyDef, fixedRotation uint8, damp float32) Body {

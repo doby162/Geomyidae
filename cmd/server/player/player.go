@@ -2,7 +2,6 @@ package player
 
 import (
 	"Geomyidae/cmd/server/box"
-	"log"
 	"math/rand"
 	"sync"
 	"time"
@@ -30,7 +29,6 @@ type NetworkPlayer struct {
 }
 
 func (l *List) NewNetworkPlayer() *NetworkPlayer {
-	log.Println("New Network Player")
 	l.WriteAccess.Lock()
 	defer l.WriteAccess.Unlock()
 	name := generateRandomString(10)
@@ -41,7 +39,7 @@ func (l *List) NewNetworkPlayer() *NetworkPlayer {
 	return l.Players[name]
 }
 
-var jump = float32(4.0)
+var jump = float32(1.0)
 
 func (p *NetworkPlayer) ApplyKeys() {
 	for _, key := range p.HeldKeys {
