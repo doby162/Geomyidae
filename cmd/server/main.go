@@ -55,7 +55,7 @@ func main() {
 		deltaTime := time.Now().Sub(prevTime).Seconds()
 		prevTime = time.Now()
 		physics.Step(deltaTime, 1)
-		//playerList.WriteAccess.Unlock()
+		playerList.WriteAccess.Unlock()
 		data := WorldData{}
 		for _, object := range objectList {
 			x, y := object.Position()
@@ -65,7 +65,6 @@ func main() {
 			x, y := networkPlayer.Body.Position()
 			data.Objects = append(data.Objects, GameObject{x, y, networkPlayer.Sprite})
 		}
-		playerList.WriteAccess.Unlock()
 		msg, _ := json.Marshal(data)
 		hub.Broadcast <- msg
 		time.Sleep(50 * time.Millisecond)
