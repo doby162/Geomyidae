@@ -11,6 +11,7 @@ require (
 	github.com/doby162/go-higher-order v0.1.1
 	github.com/hajimehoshi/ebiten/v2 v2.9.3
 	github.com/oliverbestmann/box2d-go v0.1.1
+	github.com/jakecoffman/cp/v2 v2.3.1
 )
 
 require (
