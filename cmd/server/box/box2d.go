@@ -34,8 +34,6 @@ func B2New(gravity float64) Physics {
 	def := b2.DefaultWorldDef()
 	def.Gravity = b2.Vec2{Y: float32(gravity)}
 
-	b2.EnableConcurrency(&def)
-
 	return &Box2D{
 		World: b2.CreateWorld(def),
 	}
