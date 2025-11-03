@@ -13,6 +13,7 @@ type Body interface {
 	Rotation() float64
 	SetVelocity(x, y float64)
 	SetPosition(x, y float64)
+	DestroyBody()
 }
 
 type BodyDef struct {
@@ -167,4 +168,7 @@ func (b *b2Body) ApplyForce(force b2.Vec2) {
 }
 func (b *b2Body) ApplyImpulse(force b2.Vec2) {
 	b.body.ApplyLinearImpulse(force, b.body.GetPosition(), 1)
+}
+func (b *b2Body) DestroyBody() {
+	b.body.DestroyBody()
 }

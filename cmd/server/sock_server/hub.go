@@ -1,6 +1,8 @@
 package sock_server
 
-import "Geomyidae/cmd/server/player"
+import (
+	"Geomyidae/cmd/server/player"
+)
 
 // Hub maintains the set of active clients and broadcasts messages to the
 // clients.
@@ -38,6 +40,10 @@ func (h *Hub) run() {
 			h.clients[client] = true
 		case client := <-h.unregister:
 			if _, ok := h.clients[client]; ok {
+				h.playerList.WriteAccess.Lock()
+				client.player.Body.DestroyBody()
+				delete(h.playerList.Players, client.player.Name)
+				h.playerList.WriteAccess.Unlock()
 				delete(h.clients, client)
 				close(client.send)
 			}
