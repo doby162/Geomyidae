@@ -22,8 +22,9 @@ https://ebitengine.org/en/documents/install.html#Confirming_your_environment
 Assuming you have Go installed, and maybe you ran the "Confirming your environment" command, the following should get you going:
 
 1. Clone the repo.
-2. `go run ./cmd/server/` will launch an instance of the server.
-3. `go run ./cmd/client/` will launch an instance of the client.
+2. `cd src`
+3. `go run ./server/` will launch an instance of the server.
+4. `go run ./client/` will launch an instance of the client.
 
 ### Hot reloading
 
@@ -31,6 +32,6 @@ You can use [air](https://github.com/air-verse/air) to have the client re-build 
 One time, to install [air](https://github.com/air-verse/air), run:  
 `go install github.com/air-verse/air@latest`
 
-Then from the root of this folder just run `air` to start the client and have it re-build and re-run whenever you change code.
+Then `cd src` and run `air` to start the client and have it re-build and re-run whenever you change code.
 
 _Remember that you must also have the server running._
