@@ -46,7 +46,7 @@ func main() {
 			continue // empty tile
 		}
 		fmt.Println("Creating tile at row", td.Row, "col", td.Col)
-		body := cp.NewBody(1, 1)
+		body := cp.NewStaticBody()
 		shape := cp.NewBox(body, 1, 1, 0)
 		shape.SetElasticity(0.25)
 		shape.SetDensity(0.5)
@@ -88,6 +88,6 @@ func main() {
 			msg, _ := json.Marshal(data)
 			sock.Send <- msg
 		}
-		time.Sleep(50 * time.Millisecond)
+		time.Sleep(20 * time.Millisecond)
 	}
 }

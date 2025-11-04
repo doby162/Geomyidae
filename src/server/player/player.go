@@ -48,7 +48,7 @@ func (l *List) NewNetworkPlayer() *NetworkPlayer {
 	return l.Players[name]
 }
 
-var jump = 1.0
+var jump = 0.1
 
 func (p *NetworkPlayer) ApplyKeys() {
 	for _, key := range p.HeldKeys {
