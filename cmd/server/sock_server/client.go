@@ -1,7 +1,9 @@
 package sock_server
 
 import (
+	"Geomyidae/cmd/server/player"
 	"bytes"
+	"encoding/json"
 	"log"
 	"net/http"
 	"time"
@@ -46,7 +48,12 @@ type Client struct {
 	conn *websocket.Conn
 
 	// Buffered channel of outbound messages.
-	send chan []byte
+	Send   chan []byte
+	Player *player.NetworkPlayer
+}
+
+type keysStruct struct {
+	Keys []string `json:"keys"`
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -71,7 +78,9 @@ func (c *Client) readPump() {
 			break
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		c.hub.broadcast <- message
+		keys := keysStruct{}
+		err = json.Unmarshal(message, &keys)
+		c.Player.HeldKeys = keys.Keys
 	}
 }
 
@@ -88,7 +97,7 @@ func (c *Client) writePump() {
 	}()
 	for {
 		select {
-		case message, ok := <-c.send:
+		case message, ok := <-c.Send:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// The hub closed the channel.
@@ -103,10 +112,10 @@ func (c *Client) writePump() {
 			w.Write(message)
 
 			// Add queued chat messages to the current websocket message.
-			n := len(c.send)
+			n := len(c.Send)
 			for i := 0; i < n; i++ {
 				w.Write(newline)
-				w.Write(<-c.send)
+				w.Write(<-c.Send)
 			}
 
 			if err := w.Close(); err != nil {
@@ -128,7 +137,7 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
+	client := &Client{hub: hub, conn: conn, Send: make(chan []byte, 256)}
 	client.hub.register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in
