@@ -31,3 +31,5 @@ go.work.sum
 .idea/
 .vscode/
 build-errors.log
+web/geomyidae.wasm
+wasm_exec.js

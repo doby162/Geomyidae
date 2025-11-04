@@ -13,6 +13,8 @@ import (
 	"runtime"
 	"sync"
 
+	assets "Geomyidae"
+
 	"github.com/gorilla/websocket"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -49,8 +51,6 @@ type guy struct {
 	name       string
 }
 
-var others map[string]*guy
-
 var tom = guy{}
 var heldKeys []ebiten.Key
 var world WorldData
@@ -78,7 +78,7 @@ func (g *Game) Update() error {
 
 var cameraX float64
 var cameraY float64
-var socket *websocket.Conn
+var socket WSConn
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	mu.Lock()
@@ -97,9 +97,15 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return screenWidth, screenHeight
 }
 
+// assets are embedded in package "Geomyidae/assets"
+
 func main() {
 	//slog.SetLogLoggerLevel(slog.LevelDebug)
 	beet, _ := os.ReadFile("assets/img/placeholderSprite.png")
+	beet, err := assets.FS.ReadFile("cmd/assets/img/placeholderSprite.png")
+	if err != nil {
+		log.Fatal(err)
+	}
 	bert, _, _ := image.Decode(bytes.NewReader(beet))
 	sprites = make(map[string]*ebiten.Image)
 	sprites["player_01"] = ebiten.NewImageFromImage(bert)
@@ -108,24 +114,25 @@ func main() {
 	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/ws"}
 	slog.Debug("connecting to %s", u.String())
 
-	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	conn, err := DialWS(u.String())
 	if err != nil {
 		log.Fatal("dial:", err)
 	}
-	defer func(c *websocket.Conn) {
+	defer func(c WSConn) {
 		err := c.Close()
 		if err != nil {
 			slog.Error(err.Error())
 		}
-	}(c)
-	socket = c
+	}(conn)
+
+	socket = conn
 
 	done := make(chan struct{})
 
 	go func() {
 		defer close(done)
 		for {
-			_, message, err := c.ReadMessage()
+			_, message, err := conn.ReadMessage()
 			if err != nil {
 				slog.Error("read:", err)
 				return
@@ -143,7 +150,7 @@ func main() {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	go handleChannels(done, interrupt, c)
+	go handleChannels(done, interrupt, conn)
 
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.SetWindowSize(screenWidth, screenHeight)

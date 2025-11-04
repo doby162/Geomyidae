@@ -33,7 +33,7 @@ func handleKeyState() {
 
 // copy pasta from websocket example code
 // not fully clear on what this actually does for us
-func handleChannels(done chan struct{}, interrupt chan os.Signal, c *websocket.Conn) {
+func handleChannels(done chan struct{}, interrupt chan os.Signal, c WSConn) {
 	for {
 		select {
 		case <-done:

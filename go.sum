@@ -12,6 +12,8 @@ github.com/gorilla/websocket v1.5.3 h1:saDtZ6Pbx/0u+bgYQ3q96pZgCzfhKXGPqt7kZ72aN
 github.com/gorilla/websocket v1.5.3/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/hajimehoshi/ebiten/v2 v2.9.3 h1:i2xYZ7GUk7/Bwa4CUxI/cZq+zrDrYCHGgwHLO61/Dok=
 github.com/hajimehoshi/ebiten/v2 v2.9.3/go.mod h1:DAt4tnkYYpCvu3x9i1X/nK/vOruNXIlYq/tBXxnhrXM=
+github.com/jakecoffman/cp/v2 v2.3.1 h1:evKpuQ6ljLpvvlHxDpakSBy/LC4m4yXiGqwwZVqcnG0=
+github.com/jakecoffman/cp/v2 v2.3.1/go.mod h1:6lPSBgxx6+//RIlSaMH3XaXtcCwPY1ZCJox1ThK5bZw=
 github.com/jezek/xgb v1.1.1 h1:bE/r8ZZtSv7l9gk6nU0mYx51aXrvnyb44892TwSaqS4=
 github.com/jezek/xgb v1.1.1/go.mod h1:nrhwO0FX/enq75I7Y7G8iN1ubpSGZEiA3v9e9GyRFlk=
 github.com/oliverbestmann/box2d-go v0.1.1 h1:co9A+JEfslgfmI7NfVAd2PnJxeiY3nFV39XtsV9KKQ4=
