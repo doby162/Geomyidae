@@ -99,7 +99,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 // assets are embedded in package "assets"
 
 func main() {
-	slog.SetLogLoggerLevel(slog.LevelDebug)
+	//slog.SetLogLoggerLevel(slog.LevelDebug)
 	beet, err := assets.FS.ReadFile("assets/img/placeholderSprite.png")
 	if err != nil {
 		log.Fatal(err)

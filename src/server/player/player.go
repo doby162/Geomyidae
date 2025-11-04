@@ -1,30 +1,30 @@
 package player
 
 import (
-	"Geomyidae/server/box"
 	"math/rand"
 	"sync"
 	"time"
 
-	b2 "github.com/oliverbestmann/box2d-go"
+	"github.com/jakecoffman/cp/v2"
 )
 
 type List struct {
 	Players     map[string]*NetworkPlayer
-	physics     box.Physics
+	Physics     *cp.Space
 	WriteAccess sync.Mutex
 }
 
-func NewList(physics box.Physics) *List {
+func NewList(physics *cp.Space) *List {
 	players := make(map[string]*NetworkPlayer)
-	return &List{Players: players, WriteAccess: sync.Mutex{}, physics: physics}
+	return &List{Players: players, WriteAccess: sync.Mutex{}, Physics: physics}
 }
 
 type NetworkPlayer struct {
 	Sprite   string
 	canJump  bool
 	Name     string
-	Body     box.Body
+	Body     *cp.Body
+	Shape    *cp.Shape
 	HeldKeys []string
 }
 
@@ -32,34 +32,43 @@ func (l *List) NewNetworkPlayer() *NetworkPlayer {
 	l.WriteAccess.Lock()
 	defer l.WriteAccess.Unlock()
 	name := generateRandomString(10)
-	bd := box.BodyDef{Elasticity: 0.25, Friction: 0.0, Density: 1}
 
-	body := l.physics.CreatePlayerCollider(0.5, 3, 3, bd, 1, 0.1)
-	l.Players[name] = &NetworkPlayer{Sprite: "player_01", HeldKeys: []string{}, Name: name, canJump: true, Body: body}
+	body := cp.NewBody(1, 1)
+	shape := cp.NewBox(body, 1, 1, 0)
+	shape.SetElasticity(0.25)
+	shape.SetDensity(0.5)
+	shape.SetFriction(1.0)
+	body.AddShape(shape)
+	body.SetPosition(cp.Vector{X: 5, Y: 5})
+
+	l.Physics.AddShape(shape)
+	l.Physics.AddBody(body)
+
+	l.Players[name] = &NetworkPlayer{Sprite: "player_01", HeldKeys: []string{}, Name: name, canJump: true, Body: body, Shape: shape}
 	return l.Players[name]
 }
 
-var jump = float32(1.0)
+var jump = 1.0
 
 func (p *NetworkPlayer) ApplyKeys() {
 	for _, key := range p.HeldKeys {
 		if key == "W" {
-			p.Body.ApplyImpulse(b2.Vec2{
+			p.Body.ApplyImpulseAtLocalPoint(cp.Vector{
 				X: 0,
 				Y: -jump,
-			})
+			}, cp.Vector{X: 0, Y: 0})
 		}
 		if key == "A" {
-			p.Body.ApplyImpulse(b2.Vec2{
+			p.Body.ApplyImpulseAtLocalPoint(cp.Vector{
 				X: -jump,
 				Y: 0,
-			})
+			}, cp.Vector{X: 0, Y: 0})
 		}
 		if key == "D" {
-			p.Body.ApplyImpulse(b2.Vec2{
+			p.Body.ApplyImpulseAtLocalPoint(cp.Vector{
 				X: jump,
 				Y: 0,
-			})
+			}, cp.Vector{X: 0, Y: 0})
 		}
 	}
 

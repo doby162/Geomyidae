@@ -41,7 +41,8 @@ func (h *Hub) run() {
 		case client := <-h.unregister:
 			if _, ok := h.Clients[client]; ok {
 				h.playerList.WriteAccess.Lock()
-				client.Player.Body.DestroyBody()
+				h.playerList.Physics.RemoveShape(client.Player.Shape)
+				h.playerList.Physics.RemoveBody(client.Player.Body)
 				delete(h.playerList.Players, client.Player.Name)
 				h.playerList.WriteAccess.Unlock()
 				delete(h.Clients, client)
