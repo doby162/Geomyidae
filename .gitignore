@@ -30,6 +30,6 @@ go.work.sum
 # Editor/IDE
 .idea/
 .vscode/
-build-errors.log
+tmp/
 web/geomyidae.wasm
-wasm_exec.js
+web/wasm_exec.js
