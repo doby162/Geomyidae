@@ -9,14 +9,6 @@ import (
 	"time"
 )
 
-// for this refactor I need to take all the physics logic and put it into the server
-// the front end will use ebiten and the backend will use box2d
-// socket messages will no longer be braodcast, rather they will set values that will be referenced
-// by the game loop on the server
-// regularly scheduled updates will be sent out to clients
-// this is basically a thin client pattern where the client consists of a screen and a gamepad
-// but the game fully takes place on the server
-
 var physics box.Physics
 var prevTime time.Time
 
@@ -24,8 +16,10 @@ type GameObject struct {
 	X      float64 `json:"x"`
 	Y      float64 `json:"y"`
 	Sprite string  `json:"sprite"`
+	Name   string  `json:"name"`
 }
 type WorldData struct {
+	Name    string       `json:"name"`
 	Objects []GameObject `json:"objects"`
 }
 
@@ -59,14 +53,17 @@ func main() {
 		data := WorldData{}
 		for _, object := range objectList {
 			x, y := object.Position()
-			data.Objects = append(data.Objects, GameObject{x, y, "tile_01"})
+			data.Objects = append(data.Objects, GameObject{x, y, "tile_01", ""})
 		}
 		for _, networkPlayer := range playerList.Players {
 			x, y := networkPlayer.Body.Position()
-			data.Objects = append(data.Objects, GameObject{x, y, networkPlayer.Sprite})
+			data.Objects = append(data.Objects, GameObject{x, y, networkPlayer.Sprite, networkPlayer.Name})
 		}
-		msg, _ := json.Marshal(data)
-		hub.Broadcast <- msg
+		for sock, _ := range hub.Clients {
+			data.Name = sock.Player.Name
+			msg, _ := json.Marshal(data)
+			sock.Send <- msg
+		}
 		time.Sleep(50 * time.Millisecond)
 	}
 }

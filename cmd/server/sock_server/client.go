@@ -48,8 +48,8 @@ type Client struct {
 	conn *websocket.Conn
 
 	// Buffered channel of outbound messages.
-	send   chan []byte
-	player *player.NetworkPlayer
+	Send   chan []byte
+	Player *player.NetworkPlayer
 }
 
 type keysStruct struct {
@@ -80,7 +80,7 @@ func (c *Client) readPump() {
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
 		keys := keysStruct{}
 		err = json.Unmarshal(message, &keys)
-		c.player.HeldKeys = keys.Keys
+		c.Player.HeldKeys = keys.Keys
 	}
 }
 
@@ -97,7 +97,7 @@ func (c *Client) writePump() {
 	}()
 	for {
 		select {
-		case message, ok := <-c.send:
+		case message, ok := <-c.Send:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// The hub closed the channel.
@@ -112,10 +112,10 @@ func (c *Client) writePump() {
 			w.Write(message)
 
 			// Add queued chat messages to the current websocket message.
-			n := len(c.send)
+			n := len(c.Send)
 			for i := 0; i < n; i++ {
 				w.Write(newline)
-				w.Write(<-c.send)
+				w.Write(<-c.Send)
 			}
 
 			if err := w.Close(); err != nil {
@@ -137,7 +137,7 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
+	client := &Client{hub: hub, conn: conn, Send: make(chan []byte, 256)}
 	client.hub.register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in

@@ -15,6 +15,7 @@ import (
 
 	assets "Geomyidae"
 
+	higher_order "github.com/doby162/go-higher-order"
 	"github.com/gorilla/websocket"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -35,30 +36,28 @@ type GameObject struct {
 	X      float64 `json:"x"`
 	Y      float64 `json:"y"`
 	Sprite string  `json:"sprite"`
+	Name   string  `json:"name"`
 }
 type WorldData struct {
 	Objects []GameObject `json:"objects"`
+	Name    string       `json:"name"`
 }
 type keysStruct struct {
 	Keys []string `json:"keys"`
 }
 
-type guy struct {
-	x, y       float64
-	sprite     *ebiten.Image
-	jumpFrames int
-	canJump    bool
-	name       string
-}
-
-var tom = guy{}
 var heldKeys []ebiten.Key
 var world WorldData
 var mu sync.Mutex
 
 func (g *Game) Update() error {
-	//cameraX = tom.x - screenWidth/2
-	//cameraY = tom.y - screenHeight/2 - (2 * tileSize)
+	tom := higher_order.FilterSlice(world.Objects, func(o GameObject) bool {
+		return world.Name == o.Name
+	})
+	if len(tom) == 1 {
+		cameraX = (tom[0].X * tileSize) - screenWidth/2
+		cameraY = (tom[0].Y * tileSize) - screenHeight/2 - (2 * tileSize)
+	}
 
 	handleKeyState()
 
@@ -90,7 +89,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		screen.DrawImage(sprites[object.Sprite], op)
 	}
 
-	ebitenutil.DebugPrint(screen, "Tom's position: "+fmt.Sprintf("%.2f, %.2f, goroutines:%v", tom.x, tom.y, runtime.NumGoroutine()))
+	ebitenutil.DebugPrint(screen, "Camera position: "+fmt.Sprintf("%.2f, %.2f, goroutines:%v", cameraX, cameraY, runtime.NumGoroutine()))
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
@@ -100,7 +99,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 // assets are embedded in package "Geomyidae/assets"
 
 func main() {
-	//slog.SetLogLoggerLevel(slog.LevelDebug)
+	slog.SetLogLoggerLevel(slog.LevelDebug)
 	beet, _ := os.ReadFile("assets/img/placeholderSprite.png")
 	beet, err := assets.FS.ReadFile("cmd/assets/img/placeholderSprite.png")
 	if err != nil {
