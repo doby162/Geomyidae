@@ -1,7 +1,7 @@
 package player
 
 import (
-	"Geomyidae/cmd/server/box"
+	"Geomyidae/server/box"
 	"math/rand"
 	"sync"
 	"time"

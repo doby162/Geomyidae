@@ -1,7 +1,7 @@
 package sock_server
 
 import (
-	"Geomyidae/cmd/server/player"
+	"Geomyidae/server/player"
 )
 
 // Hub maintains the set of active Clients and broadcasts messages to the

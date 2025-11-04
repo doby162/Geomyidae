@@ -96,12 +96,11 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return screenWidth, screenHeight
 }
 
-// assets are embedded in package "Geomyidae/assets"
+// assets are embedded in package "assets"
 
 func main() {
 	slog.SetLogLoggerLevel(slog.LevelDebug)
-	beet, _ := os.ReadFile("assets/img/placeholderSprite.png")
-	beet, err := assets.FS.ReadFile("cmd/assets/img/placeholderSprite.png")
+	beet, err := assets.FS.ReadFile("assets/img/placeholderSprite.png")
 	if err != nil {
 		log.Fatal(err)
 	}

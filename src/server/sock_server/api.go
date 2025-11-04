@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"Geomyidae/cmd/server/player"
+	"Geomyidae/server/player"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"

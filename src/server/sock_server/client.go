@@ -1,7 +1,7 @@
 package sock_server
 
 import (
-	"Geomyidae/cmd/server/player"
+	"Geomyidae/server/player"
 	"bytes"
 	"encoding/json"
 	"log"

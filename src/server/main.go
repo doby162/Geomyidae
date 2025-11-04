@@ -1,9 +1,9 @@
 package main
 
 import (
-	"Geomyidae/cmd/server/box"
-	"Geomyidae/cmd/server/player"
-	"Geomyidae/cmd/server/sock_server"
+	"Geomyidae/server/box"
+	"Geomyidae/server/player"
+	"Geomyidae/server/sock_server"
 	"encoding/json"
 	"strings"
 	"time"
