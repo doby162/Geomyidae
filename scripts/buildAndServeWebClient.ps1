@@ -1,7 +1,7 @@
-Push-Location $PSScriptRoot\..
+Push-Location $PSScriptRoot\..\src
 $env:GOOS = "js"
 $env:GOARCH = "wasm"
-go build -o web/geomyidae.wasm ./cmd/client
+go build -o ../web/geomyidae.wasm ./client
 Remove-Item Env:\GOOS; Remove-Item Env:\GOARCH
 Pop-Location
 Push-Location $PSScriptRoot\..\web
