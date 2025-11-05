@@ -52,7 +52,7 @@ var userConfig UserConfig
 
 func (g *Game) Update() error {
 	winX, winY := ebiten.WindowPosition()
-	if winX != userConfig.WindowPositionX || winY != userConfig.WindowPositionY {
+	if userConfig.ConfigPath != "" && (winX != userConfig.WindowPositionX || winY != userConfig.WindowPositionY) {
 		userConfig.WindowPositionX = winX
 		userConfig.WindowPositionY = winY
 		configData, _ := json.MarshalIndent(userConfig, "", "  ")
@@ -60,9 +60,10 @@ func (g *Game) Update() error {
 		if err != nil {
 			// Do not crash the game at this point if the config file cannot be updated
 			slog.Error("Could not update user config file:", err)
+		} else {
+			configFile.Write(configData)
+			configFile.Close()
 		}
-		configFile.Write(configData)
-		configFile.Close()
 	}
 
 	if us == "" {
@@ -197,7 +198,7 @@ func main() {
 	// Load user config data
 	userConfig.ConfigDir, err = os.UserConfigDir()
 	if err != nil {
-		log.Fatal("Could not get user config dir:", err)
+		slog.Debug("Could not get user config dir: %v", err)
 		userConfig.ConfigDir = ""
 		// This is expected to fail on some systems, so we can just continue without a config dir.
 	}
