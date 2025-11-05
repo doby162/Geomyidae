@@ -1,6 +1,7 @@
 package sock_server
 
 import (
+	"Geomyidae/internal/shared_structs"
 	"Geomyidae/server/player"
 	"bytes"
 	"encoding/json"
@@ -52,10 +53,6 @@ type Client struct {
 	Player *player.NetworkPlayer
 }
 
-type keysStruct struct {
-	Keys []string `json:"keys"`
-}
-
 // readPump pumps messages from the websocket connection to the hub.
 //
 // The application runs readPump in a per-connection goroutine. The application
@@ -78,7 +75,7 @@ func (c *Client) readPump() {
 			break
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		keys := keysStruct{}
+		keys := shared_structs.KeyStruct{}
 		err = json.Unmarshal(message, &keys)
 		c.Player.HeldKeys = keys.Keys
 	}

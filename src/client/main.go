@@ -11,11 +11,12 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"slices"
 	"sync"
 
 	assets "Geomyidae"
 
-	"Geomyidae/internal/game_object"
+	"Geomyidae/internal/shared_structs"
 
 	higher_order "github.com/doby162/go-higher-order"
 	"github.com/gorilla/websocket"
@@ -36,18 +37,16 @@ var sprites map[string]*ebiten.Image
 type Game struct{}
 
 type WorldData struct {
-	Objects []game_object.GameObject `json:"objects"`
-	Name    string                   `json:"name"`
-}
-type keysStruct struct {
-	Keys []string `json:"keys"`
+	Objects []shared_structs.GameObject `json:"objects"`
+	Name    string                      `json:"name"`
 }
 
 var world WorldData
 var mu sync.Mutex
+var oldKeys shared_structs.KeyStruct
 
 func (g *Game) Update() error {
-	tom := higher_order.FilterSlice(world.Objects, func(o game_object.GameObject) bool {
+	tom := higher_order.FilterSlice(world.Objects, func(o shared_structs.GameObject) bool {
 		return world.Name == o.Name
 	})
 	if len(tom) == 1 {
@@ -55,11 +54,15 @@ func (g *Game) Update() error {
 		cameraY = (tom[0].Y * tileSize) - screenHeight/2 - (2 * tileSize)
 	}
 
-	msg := keysStruct{}
+	msg := shared_structs.KeyStruct{}
 
 	for _, ekey := range inpututil.AppendPressedKeys([]ebiten.Key{}) {
 		msg.Keys = append(msg.Keys, ekey.String())
 	}
+	if slices.Equal(msg.Keys, oldKeys.Keys) {
+		return nil
+	}
+	oldKeys = msg
 	msgBytes, _ := json.Marshal(msg)
 
 	err := socket.WriteMessage(websocket.TextMessage, msgBytes)

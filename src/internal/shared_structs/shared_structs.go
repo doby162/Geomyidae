@@ -1,4 +1,4 @@
-package game_object
+package shared_structs
 
 type GameObject struct {
 	X       float64 `json:"x"`
@@ -10,4 +10,8 @@ type GameObject struct {
 	Height  int     `json:"sprite_y1"`
 	Name    string  `json:"name"`
 	Angle   float64 `json:"rotation"`
+}
+
+type KeyStruct struct {
+	Keys []string `json:"keys"`
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/jakecoffman/cp/v2"
 
 	assets "Geomyidae"
-	"Geomyidae/internal/game_object"
+	"Geomyidae/internal/shared_structs"
 	tiled "Geomyidae/internal/tiled"
 	"log"
 )
@@ -18,8 +18,8 @@ var physics *cp.Space
 var prevTime time.Time
 
 type WorldData struct {
-	Name    string                   `json:"name"`
-	Objects []game_object.GameObject `json:"objects"`
+	Name    string                      `json:"name"`
+	Objects []shared_structs.GameObject `json:"objects"`
 }
 
 func main() {
@@ -69,7 +69,7 @@ func main() {
 		for _, object := range objectList {
 			pos := object.Position()
 			x, y := pos.X, pos.Y
-			data.Objects = append(data.Objects, game_object.GameObject{
+			data.Objects = append(data.Objects, shared_structs.GameObject{
 				X:       x,
 				Y:       y,
 				Sprite:  "platformerPack_industrial",
@@ -84,7 +84,7 @@ func main() {
 		for _, networkPlayer := range playerList.Players {
 			pos := networkPlayer.Body.Position()
 			x, y := pos.X, pos.Y
-			data.Objects = append(data.Objects, game_object.GameObject{
+			data.Objects = append(data.Objects, shared_structs.GameObject{
 				X:       x,
 				Y:       y,
 				Sprite:  "spaceShooterRedux",
