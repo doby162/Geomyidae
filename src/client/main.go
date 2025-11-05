@@ -108,11 +108,18 @@ func main() {
 	}
 	platformPackImg, _, _ := image.Decode(bytes.NewReader(platformPackData))
 
+	spaceShooterReduxData, err := assets.FS.ReadFile("assets/img/spaceShooterRedux_sheet.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	spaceShooterReduxImg, _, _ := image.Decode(bytes.NewReader(spaceShooterReduxData))
+
 	// Create sprites map
 	sprites = make(map[string]*ebiten.Image)
 	sprites["player_01"] = ebiten.NewImageFromImage(bert)
 	sprites["tom"] = ebiten.NewImageFromImage(bert)
 	sprites["platformerPack_industrial"] = ebiten.NewImageFromImage(platformPackImg)
+	sprites["spaceShooterRedux"] = ebiten.NewImageFromImage(spaceShooterReduxImg)
 
 	// Connect to WebSocket server
 	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/ws"}

@@ -89,11 +89,11 @@ func main() {
 			data.Objects = append(data.Objects, game_object.GameObject{
 				X:       x,
 				Y:       y,
-				Sprite:  "tom",
-				OffsetX: 0,
+				Sprite:  "spaceShooterRedux",
+				OffsetX: 325,
 				OffsetY: 0,
-				Width:   64,
-				Height:  64,
+				Width:   98,
+				Height:  78,
 				Name:    networkPlayer.Name,
 			})
 		}
