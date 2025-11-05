@@ -42,7 +42,7 @@ func main() {
 		body := cp.NewStaticBody()
 		shape := cp.NewBox(body, 2, 2, 0)
 		shape.SetElasticity(0.25)
-		shape.SetDensity(5.5)
+		shape.SetDensity(0.5)
 		shape.SetFriction(1.0)
 		body.AddShape(shape)
 		body.SetPosition(cp.Vector{X: float64(td.Col) + 0.5, Y: float64(td.Row) + 0.5})

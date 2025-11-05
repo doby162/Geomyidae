@@ -21,12 +21,13 @@ func NewList(physics *cp.Space) *List {
 }
 
 type NetworkPlayer struct {
-	Sprite   string
-	canJump  bool
-	Name     string
-	Body     *cp.Body
-	Shape    *cp.Shape
-	HeldKeys []string
+	Sprite      string
+	canJump     bool
+	Name        string
+	Body        *cp.Body
+	Shape       *cp.Shape
+	HeldKeys    []string
+	thrustTimer int
 }
 
 func (l *List) NewNetworkPlayer() *NetworkPlayer {
@@ -50,13 +51,24 @@ func (l *List) NewNetworkPlayer() *NetworkPlayer {
 	return l.Players[name]
 }
 
+// these could be multiplied by delta time
 var thrust = 0.02
-var maxSpeed = 1.0
-var turn = 0.05
+var maxSpeed = 2.0
+var turn = 0.02
 
 func (p *NetworkPlayer) ApplyKeys() {
 	for _, key := range p.HeldKeys {
-		if key == "W" {
+		p.Body.EachArbiter(func(arbiter *cp.Arbiter) {
+			// this does not work as well as I would like it to, currently
+			// getting the actual collision data and doing something with it
+			// is probably the key
+			//bodA, bodB := arbiter.Bodies()
+			p.thrustTimer = 200
+		})
+		if p.thrustTimer > 0 {
+			p.thrustTimer -= 1
+		}
+		if key == "W" && p.thrustTimer == 0 {
 			p.Body.ApplyImpulseAtLocalPoint(cp.Vector{
 				X: -math.Sin(thrust),
 				Y: -math.Cos(-thrust),
@@ -64,12 +76,12 @@ func (p *NetworkPlayer) ApplyKeys() {
 		}
 		if key == "A" {
 			rot := p.Body.Angle()
-			p.Body.SetAngle(rot + turn)
+			p.Body.SetAngle(rot - turn)
 			p.Body.SetAngularVelocity(0)
 		}
 		if key == "D" {
 			rot := p.Body.Angle()
-			p.Body.SetAngle(rot - turn)
+			p.Body.SetAngle(rot + turn)
 			p.Body.SetAngularVelocity(0)
 		}
 		if key == "S" {
