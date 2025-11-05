@@ -73,6 +73,13 @@ func (g *Game) Update() error {
 			}
 		}
 	}
+
+	// us doesn't seem to exist early on in the web build, so return early until it dies
+	if us == "" {
+		return nil
+	}
+
+	// Center camera on player
 	cameraX = (worldMap[us].X * tileSize) - screenWidth/2
 	cameraY = (worldMap[us].Y * tileSize) - screenHeight/2 - (2 * tileSize)
 
