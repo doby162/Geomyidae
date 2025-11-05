@@ -64,7 +64,7 @@ func (g *Game) Update() error {
 
 	err := socket.WriteMessage(websocket.TextMessage, msgBytes)
 	if err != nil {
-		slog.Error(err.Error())
+		log.Fatal("Websocket send error:", err.Error())
 	}
 
 	return nil
@@ -146,8 +146,7 @@ func main() {
 		for {
 			_, message, err := conn.ReadMessage()
 			if err != nil {
-				slog.Error("read:", err)
-				return
+				log.Fatal("Websocket read error:", err)
 			}
 			slog.Debug("recv: %s", message)
 			mu.Lock()
