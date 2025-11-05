@@ -93,7 +93,7 @@ func main() {
 				OffsetX: 325,
 				OffsetY: 0,
 				Width:   98,
-				Height:  78,
+				Height:  75,
 				Name:    networkPlayer.Name,
 			})
 		}
