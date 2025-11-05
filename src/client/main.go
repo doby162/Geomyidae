@@ -21,6 +21,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 const (
@@ -42,7 +43,6 @@ type keysStruct struct {
 	Keys []string `json:"keys"`
 }
 
-var heldKeys []ebiten.Key
 var world WorldData
 var mu sync.Mutex
 
@@ -55,10 +55,9 @@ func (g *Game) Update() error {
 		cameraY = (tom[0].Y * tileSize) - screenHeight/2 - (2 * tileSize)
 	}
 
-	handleKeyState()
-
 	msg := keysStruct{}
-	for _, ekey := range heldKeys {
+
+	for _, ekey := range inpututil.AppendPressedKeys([]ebiten.Key{}) {
 		msg.Keys = append(msg.Keys, ekey.String())
 	}
 	msgBytes, _ := json.Marshal(msg)
