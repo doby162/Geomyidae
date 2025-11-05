@@ -40,7 +40,7 @@ func main() {
 			continue // empty tile
 		}
 		body := cp.NewStaticBody()
-		shape := cp.NewBox(body, 2, 2, 0)
+		shape := cp.NewBox(body, 1, 1, 0)
 		shape.SetElasticity(0.25)
 		shape.SetDensity(0.5)
 		shape.SetFriction(1.0)
