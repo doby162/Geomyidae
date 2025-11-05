@@ -18,7 +18,6 @@ import (
 
 	"Geomyidae/internal/shared_structs"
 
-	higher_order "github.com/doby162/go-higher-order"
 	"github.com/gorilla/websocket"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -36,23 +35,22 @@ var sprites map[string]*ebiten.Image
 
 type Game struct{}
 
-type WorldData struct {
-	Objects []shared_structs.GameObject `json:"objects"`
-	Name    string                      `json:"name"`
-}
-
-var world WorldData
+var us string
+var name string
+var worldMap map[string]*shared_structs.GameObject
 var mu sync.Mutex
 var oldKeys shared_structs.KeyStruct
 
 func (g *Game) Update() error {
-	tom := higher_order.FilterSlice(world.Objects, func(o shared_structs.GameObject) bool {
-		return world.Name == o.Name
-	})
-	if len(tom) == 1 {
-		cameraX = (tom[0].X * tileSize) - screenWidth/2
-		cameraY = (tom[0].Y * tileSize) - screenHeight/2 - (2 * tileSize)
+	if us == "" {
+		for _, obj := range worldMap {
+			if obj.Name == name {
+				us = obj.Name
+			}
+		}
 	}
+	cameraX = (worldMap[us].X * tileSize) - screenWidth/2
+	cameraY = (worldMap[us].Y * tileSize) - screenHeight/2 - (2 * tileSize)
 
 	msg := shared_structs.KeyStruct{}
 
@@ -80,7 +78,7 @@ var socket WSConn
 func (g *Game) Draw(screen *ebiten.Image) {
 	mu.Lock()
 	defer mu.Unlock()
-	for _, object := range world.Objects {
+	for _, object := range worldMap {
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(-tileHalf, -tileHalf)
 		op.GeoM.Rotate(object.Angle)
@@ -100,6 +98,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 
 func main() {
 	//slog.SetLogLoggerLevel(slog.LevelDebug)
+	worldMap = make(map[string]*shared_structs.GameObject)
 	beet, err := assets.FS.ReadFile("assets/img/placeholderSprite.png")
 	if err != nil {
 		log.Fatal(err)
@@ -152,12 +151,18 @@ func main() {
 				log.Fatal("Websocket read error:", err)
 			}
 			slog.Debug("recv: %s", message)
-			mu.Lock()
-			err = json.Unmarshal(message, &world)
-			mu.Unlock()
+			var newState shared_structs.WorldData
+			err = json.Unmarshal(message, &newState)
 			if err != nil {
 				slog.Error("unmarshal:", err)
 			}
+			name = newState.Name
+			mu.Lock()
+			for _, object := range newState.Objects {
+				key := object.UUID
+				worldMap[key] = &object
+			}
+			mu.Unlock()
 		}
 	}()
 

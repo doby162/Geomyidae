@@ -22,12 +22,13 @@ func NewList(physics *cp.Space) *List {
 }
 
 type NetworkPlayer struct {
-	Sprite   string
-	canJump  bool
-	Name     string
-	Body     *cp.Body
-	Shape    *cp.Shape
-	HeldKeys []string
+	Sprite       string
+	canJump      bool
+	Name         string
+	Body         *cp.Body
+	Shape        *cp.Shape
+	HeldKeys     []string
+	NeedsStatics bool
 }
 
 func (l *List) NewNetworkPlayer() *NetworkPlayer {
@@ -47,7 +48,8 @@ func (l *List) NewNetworkPlayer() *NetworkPlayer {
 	l.Physics.AddShape(shape)
 	l.Physics.AddBody(body)
 
-	l.Players[name] = &NetworkPlayer{Sprite: "player_01", HeldKeys: []string{}, Name: name, canJump: true, Body: body, Shape: shape}
+	l.Players[name] = &NetworkPlayer{Sprite: "player_01", HeldKeys: []string{}, Name: name, canJump: true, Body: body,
+		Shape: shape, NeedsStatics: true}
 	return l.Players[name]
 }
 

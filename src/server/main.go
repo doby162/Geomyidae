@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jakecoffman/cp/v2"
 
 	assets "Geomyidae"
@@ -17,14 +18,9 @@ import (
 var physics *cp.Space
 var prevTime time.Time
 
-type WorldData struct {
-	Name    string                      `json:"name"`
-	Objects []shared_structs.GameObject `json:"objects"`
-}
-
 var playerList *player.List
-var staticObjectList []*cp.Body
-var dynamicObjectList []*cp.Body
+var staticObjectList []*shared_structs.GameObject
+var dynamicObjectList []*shared_structs.GameObject
 
 func main() {
 	// Import tile data
@@ -50,8 +46,22 @@ func main() {
 		body.AddShape(shape)
 		body.SetPosition(cp.Vector{X: float64(td.Col) + 0.5, Y: float64(td.Row) + 0.5})
 
+		pos := body.Position()
+		obj := shared_structs.GameObject{
+			X:       pos.X,
+			Y:       pos.Y,
+			Sprite:  "platformerPack_industrial",
+			OffsetX: 0,
+			OffsetY: 0,
+			Width:   64,
+			Height:  64,
+			Name:    "",
+			Angle:   body.Angle(),
+			UUID:    uuid.New().String(),
+		}
+
 		physics.AddShape(shape)
-		staticObjectList = append(staticObjectList, body)
+		staticObjectList = append(staticObjectList, &obj)
 		physics.AddBody(body)
 	}
 
@@ -69,7 +79,7 @@ func main() {
 		physics.Step(deltaTime)
 		playerList.WriteAccess.Unlock()
 
-		data := collectWorldState(true)
+		data := collectWorldState()
 
 		for sock, _ := range hub.Clients {
 			data.Name = sock.Player.Name
@@ -80,44 +90,15 @@ func main() {
 	}
 }
 
-func collectWorldState(includeStaticAndAsleep bool) *WorldData {
-	data := WorldData{}
-	if includeStaticAndAsleep {
-		for _, object := range staticObjectList {
-			pos := object.Position()
-			x, y := pos.X, pos.Y
-			data.Objects = append(data.Objects, shared_structs.GameObject{
-				X:       x,
-				Y:       y,
-				Sprite:  "platformerPack_industrial",
-				OffsetX: 0,
-				OffsetY: 0,
-				Width:   64,
-				Height:  64,
-				Name:    "",
-				Angle:   object.Angle(),
-			})
-		}
-	}
-	for _, object := range dynamicObjectList {
-		if object.IsSleeping() && !includeStaticAndAsleep {
-			continue
-		}
-		pos := object.Position()
-		x, y := pos.X, pos.Y
-		data.Objects = append(data.Objects, shared_structs.GameObject{
-			X:       x,
-			Y:       y,
-			Sprite:  "platformerPack_industrial",
-			OffsetX: 0,
-			OffsetY: 0,
-			Width:   64,
-			Height:  64,
-			Name:    "",
-			Angle:   object.Angle(),
-		})
-	}
+func collectWorldState() *shared_structs.WorldData {
+	data := shared_structs.WorldData{}
+	includeStaticAndAsleep := false
 	for _, networkPlayer := range playerList.Players {
+		if networkPlayer.NeedsStatics {
+			log.Println("full packet")
+			includeStaticAndAsleep = true
+			networkPlayer.NeedsStatics = false
+		}
 		pos := networkPlayer.Body.Position()
 		x, y := pos.X, pos.Y
 		data.Objects = append(data.Objects, shared_structs.GameObject{
@@ -130,7 +111,25 @@ func collectWorldState(includeStaticAndAsleep bool) *WorldData {
 			Height:  75,
 			Name:    networkPlayer.Name,
 			Angle:   networkPlayer.Body.Angle(),
+			UUID:    networkPlayer.Name,
 		})
 	}
-	return &WorldData{}
+	if includeStaticAndAsleep {
+		for _, object := range staticObjectList {
+			data.Objects = append(data.Objects, *object)
+		}
+	}
+	for _, object := range dynamicObjectList {
+		if object.Body.IsSleeping() && !includeStaticAndAsleep {
+			continue
+		}
+		pos := object.Body.Position()
+		x, y := pos.X, pos.Y
+		object.X = x
+		object.Y = y
+		object.Angle = object.Body.Angle()
+		data.Objects = append(data.Objects, *object)
+	}
+	log.Println(len(data.Objects))
+	return &data
 }
