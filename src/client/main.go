@@ -15,6 +15,8 @@ import (
 
 	assets "Geomyidae"
 
+	"Geomyidae/internal/game_object"
+
 	higher_order "github.com/doby162/go-higher-order"
 	"github.com/gorilla/websocket"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -32,15 +34,9 @@ var sprites map[string]*ebiten.Image
 
 type Game struct{}
 
-type GameObject struct {
-	X      float64 `json:"x"`
-	Y      float64 `json:"y"`
-	Sprite string  `json:"sprite"`
-	Name   string  `json:"name"`
-}
 type WorldData struct {
-	Objects []GameObject `json:"objects"`
-	Name    string       `json:"name"`
+	Objects []game_object.GameObject `json:"objects"`
+	Name    string                   `json:"name"`
 }
 type keysStruct struct {
 	Keys []string `json:"keys"`
@@ -51,7 +47,7 @@ var world WorldData
 var mu sync.Mutex
 
 func (g *Game) Update() error {
-	tom := higher_order.FilterSlice(world.Objects, func(o GameObject) bool {
+	tom := higher_order.FilterSlice(world.Objects, func(o game_object.GameObject) bool {
 		return world.Name == o.Name
 	})
 	if len(tom) == 1 {
@@ -86,7 +82,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(-cameraX, -cameraY)
 		op.GeoM.Translate(object.X*tileSize-tileHalf, object.Y*tileSize-tileHalf)
-		screen.DrawImage(sprites[object.Sprite], op)
+		screen.DrawImage(sprites[object.Sprite].SubImage(image.Rect(object.OffsetX, object.OffsetY, object.OffsetX+object.Width, object.OffsetY+object.Height)).(*ebiten.Image), op)
 	}
 
 	ebitenutil.DebugPrint(screen, "Camera position: "+fmt.Sprintf("%.2f, %.2f, goroutines:%v", cameraX, cameraY, runtime.NumGoroutine()))
@@ -105,10 +101,20 @@ func main() {
 		log.Fatal(err)
 	}
 	bert, _, _ := image.Decode(bytes.NewReader(beet))
+
+	platformPackData, err := assets.FS.ReadFile("assets/img/platformerPack_industrial_tilesheet_64x64.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	platformPackImg, _, _ := image.Decode(bytes.NewReader(platformPackData))
+
+	// Create sprites map
 	sprites = make(map[string]*ebiten.Image)
 	sprites["player_01"] = ebiten.NewImageFromImage(bert)
-	sprites["tile_01"] = ebiten.NewImageFromImage(bert)
+	sprites["tom"] = ebiten.NewImageFromImage(bert)
+	sprites["platformerPack_industrial"] = ebiten.NewImageFromImage(platformPackImg)
 
+	// Connect to WebSocket server
 	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/ws"}
 	slog.Debug("connecting to %s", u.String())
 

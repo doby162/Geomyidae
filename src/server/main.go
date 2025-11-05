@@ -4,10 +4,12 @@ import (
 	"Geomyidae/server/player"
 	"Geomyidae/server/sock_server"
 	"encoding/json"
-	"github.com/jakecoffman/cp/v2"
 	"time"
 
+	"github.com/jakecoffman/cp/v2"
+
 	assets "Geomyidae"
+	"Geomyidae/internal/game_object"
 	tiled "Geomyidae/internal/tiled"
 	"fmt"
 	"log"
@@ -16,15 +18,9 @@ import (
 var physics *cp.Space
 var prevTime time.Time
 
-type GameObject struct {
-	X      float64 `json:"x"`
-	Y      float64 `json:"y"`
-	Sprite string  `json:"sprite"`
-	Name   string  `json:"name"`
-}
 type WorldData struct {
-	Name    string       `json:"name"`
-	Objects []GameObject `json:"objects"`
+	Name    string                   `json:"name"`
+	Objects []game_object.GameObject `json:"objects"`
 }
 
 func main() {
@@ -76,12 +72,30 @@ func main() {
 		for _, object := range objectList {
 			pos := object.Position()
 			x, y := pos.X, pos.Y
-			data.Objects = append(data.Objects, GameObject{x, y, "tile_01", ""})
+			data.Objects = append(data.Objects, game_object.GameObject{
+				X:       x,
+				Y:       y,
+				Sprite:  "platformerPack_industrial",
+				OffsetX: 0,
+				OffsetY: 0,
+				Width:   64,
+				Height:  64,
+				Name:    "",
+			})
 		}
 		for _, networkPlayer := range playerList.Players {
 			pos := networkPlayer.Body.Position()
 			x, y := pos.X, pos.Y
-			data.Objects = append(data.Objects, GameObject{x, y, networkPlayer.Sprite, networkPlayer.Name})
+			data.Objects = append(data.Objects, game_object.GameObject{
+				X:       x,
+				Y:       y,
+				Sprite:  "tom",
+				OffsetX: 0,
+				OffsetY: 0,
+				Width:   64,
+				Height:  64,
+				Name:    networkPlayer.Name,
+			})
 		}
 		for sock, _ := range hub.Clients {
 			data.Name = sock.Player.Name
