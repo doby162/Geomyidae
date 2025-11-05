@@ -70,6 +70,12 @@ func (p *NetworkPlayer) ApplyKeys() {
 				Y: 0,
 			}, cp.Vector{X: 0, Y: 0})
 		}
+		if key == "S" {
+			p.Body.ApplyImpulseAtLocalPoint(cp.Vector{
+				X: 0,
+				Y: jump,
+			}, cp.Vector{X: 0, Y: 0})
+		}
 	}
 
 	return

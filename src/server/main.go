@@ -11,7 +11,6 @@ import (
 	assets "Geomyidae"
 	"Geomyidae/internal/game_object"
 	tiled "Geomyidae/internal/tiled"
-	"fmt"
 	"log"
 )
 
@@ -30,7 +29,6 @@ func main() {
 		log.Fatal(err)
 	}
 	tileData := tiled.GetTileData(tileByteInput)
-	fmt.Println("Total tiles loaded:", len(tileData))
 
 	// instantiate state
 	physics = cp.NewSpace()
@@ -41,7 +39,6 @@ func main() {
 		if td.ID == 0 {
 			continue // empty tile
 		}
-		fmt.Println("Creating tile at row", td.Row, "col", td.Col)
 		body := cp.NewStaticBody()
 		shape := cp.NewBox(body, 1, 1, 0)
 		shape.SetElasticity(0.25)
