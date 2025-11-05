@@ -80,6 +80,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	defer mu.Unlock()
 	for _, object := range world.Objects {
 		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(-tileHalf, -tileHalf)
+		op.GeoM.Rotate(object.Angle)
 		op.GeoM.Translate(-cameraX, -cameraY)
 		op.GeoM.Translate(object.X*tileSize-tileHalf, object.Y*tileSize-tileHalf)
 		screen.DrawImage(sprites[object.Sprite].SubImage(image.Rect(object.OffsetX, object.OffsetY, object.OffsetX+object.Width, object.OffsetY+object.Height)).(*ebiten.Image), op)

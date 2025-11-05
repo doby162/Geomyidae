@@ -9,4 +9,5 @@ type GameObject struct {
 	Width   int     `json:"sprite_x1"`
 	Height  int     `json:"sprite_y1"`
 	Name    string  `json:"name"`
+	Angle   float64 `json:"rotation"`
 }
