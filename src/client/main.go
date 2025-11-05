@@ -41,7 +41,30 @@ var worldMap map[string]*shared_structs.GameObject
 var mu sync.Mutex
 var oldKeys shared_structs.KeyStruct
 
+type UserConfig struct {
+	ConfigDir       string `json:"config_dir"`
+	ConfigPath      string `json:"config_path"`
+	WindowPositionX int    `json:"window_position_x"`
+	WindowPositionY int    `json:"window_position_y"`
+}
+
+var userConfig UserConfig
+
 func (g *Game) Update() error {
+	winX, winY := ebiten.WindowPosition()
+	if winX != userConfig.WindowPositionX || winY != userConfig.WindowPositionY {
+		userConfig.WindowPositionX = winX
+		userConfig.WindowPositionY = winY
+		configData, _ := json.MarshalIndent(userConfig, "", "  ")
+		configFile, err := os.Create(userConfig.ConfigPath)
+		if err != nil {
+			// Do not crash the game at this point if the config file cannot be updated
+			slog.Error("Could not update user config file:", err)
+		}
+		configFile.Write(configData)
+		configFile.Close()
+	}
+
 	if us == "" {
 		for _, obj := range worldMap {
 			if obj.Name == name {
@@ -171,9 +194,52 @@ func main() {
 
 	go handleChannels(done, interrupt, conn)
 
+	// Load user config data
+	userConfig.ConfigDir, err = os.UserConfigDir()
+	if err != nil {
+		log.Fatal("Could not get user config dir:", err)
+		userConfig.ConfigDir = ""
+		// This is expected to fail on some systems, so we can just continue without a config dir.
+	}
+	if userConfig.ConfigDir != "" {
+		userConfig.ConfigDir = userConfig.ConfigDir + string(os.PathSeparator) + "Geomyidae"
+		err = os.MkdirAll(userConfig.ConfigDir, os.ModePerm)
+		if err != nil {
+			log.Fatal("Could not create user config dir:", err)
+			userConfig.ConfigDir = ""
+		}
+		// Load config file or create it if it doesn't exist
+		userConfig.ConfigPath = userConfig.ConfigDir + string(os.PathSeparator) + "config.json"
+		configFileData, err := os.ReadFile(userConfig.ConfigPath)
+		if err != nil {
+			// Create default config file
+			configFile, err := os.Create(userConfig.ConfigPath)
+			if err != nil {
+				log.Fatal("Could not create user config file:", err)
+			} else {
+				defaultConfigData, _ := json.MarshalIndent(userConfig, "", "  ")
+				_, err = configFile.Write(defaultConfigData)
+				if err != nil {
+					log.Fatal("Could not write default user config file:", err)
+				}
+				configFile.Close()
+			}
+		} else {
+			// Load existing config file
+			err = json.Unmarshal(configFileData, &userConfig)
+			if err != nil {
+				log.Fatal("Could not parse user config file:", err)
+			}
+		}
+		log.Println("User config file path:", userConfig.ConfigPath)
+	}
+
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Geomyidae")
+	if userConfig.WindowPositionX != 0 || userConfig.WindowPositionY != 0 {
+		ebiten.SetWindowPosition(userConfig.WindowPositionX, userConfig.WindowPositionY)
+	}
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)
 	}
