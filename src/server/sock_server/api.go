@@ -1,6 +1,7 @@
 package sock_server
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -18,14 +19,14 @@ func Api(playerList *player.List) *Hub {
 	r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})
-	port := ":8080"
-	log.Printf("Listening on http://127.0.0.1%v \n", port)
+	portNumber := 8080
+	listenServerURL := fmt.Sprintf(":%d", portNumber)
+	log.Printf("Websocket server is now running on port %v \n", portNumber)
 	go func() {
-		err := http.ListenAndServe(port, r)
+		err := http.ListenAndServe(listenServerURL, r)
 		if err != nil {
 			log.Printf("error: %v", err)
 		}
 	}()
-	//return http.ListenAndServeTLS(":8080", "cert.pem", "key.pem", r)
 	return hub
 }
