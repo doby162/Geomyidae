@@ -130,6 +130,5 @@ func collectWorldState() *shared_structs.WorldData {
 		object.Angle = object.Body.Angle()
 		data.Objects = append(data.Objects, *object)
 	}
-	log.Println(len(data.Objects))
 	return &data
 }
