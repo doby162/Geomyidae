@@ -128,7 +128,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 // assets are embedded in package "assets"
 
 func main() {
-	//slog.SetLogLoggerLevel(slog.LevelDebug)
+	slog.SetLogLoggerLevel(slog.LevelDebug)
 	worldMap = make(map[string]*shared_structs.GameObject)
 	beet, err := assets.FS.ReadFile("assets/img/placeholderSprite.png")
 	if err != nil {
@@ -151,7 +151,6 @@ func main() {
 	// Create sprites map
 	sprites = make(map[string]*ebiten.Image)
 	sprites["player_01"] = ebiten.NewImageFromImage(bert)
-	sprites["tom"] = ebiten.NewImageFromImage(bert)
 	sprites["platformerPack_industrial"] = ebiten.NewImageFromImage(platformPackImg)
 	sprites["spaceShooterRedux"] = ebiten.NewImageFromImage(spaceShooterReduxImg)
 
@@ -181,7 +180,7 @@ func main() {
 			if err != nil {
 				log.Fatal("Websocket read error:", err)
 			}
-			slog.Debug("recv: %s", message)
+			slog.Debug(string(bytes.TrimSpace(message)))
 			var newState shared_structs.WorldData
 			err = json.Unmarshal(message, &newState)
 			if err != nil {

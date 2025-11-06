@@ -70,10 +70,10 @@ func main() {
 	prevTime = time.Now()
 	for {
 		playerList.WriteAccess.Lock()
-		for _, networkPlayer := range playerList.Players {
-			networkPlayer.ApplyKeys()
-		}
 		deltaTime := time.Now().Sub(prevTime).Seconds()
+		for _, networkPlayer := range playerList.Players {
+			networkPlayer.ApplyKeys(deltaTime)
+		}
 		prevTime = time.Now()
 		physics.Step(deltaTime)
 		playerList.WriteAccess.Unlock()
@@ -85,7 +85,7 @@ func main() {
 			msg, _ := json.Marshal(data)
 			sock.Send <- msg
 		}
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(20 * time.Millisecond)
 	}
 }
 

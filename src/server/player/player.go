@@ -53,14 +53,16 @@ func (l *List) NewNetworkPlayer() *NetworkPlayer {
 }
 
 // these could be multiplied by delta time
-var thrust = 0.02
-var maxSpeed = 30.0
-var turn = 0.02
+const thrust = 2
+const maxSpeed = 30.0
+const turn = 2
 
-func (p *NetworkPlayer) ApplyKeys() {
+func (p *NetworkPlayer) ApplyKeys(deltaTime float64) {
 	//p.Body.EachArbiter(func(arbiter *cp.Arbiter) {
 	//bodA, bodB := arbiter.Bodies()
 	//})
+	tr := thrust * deltaTime
+	tn := turn * deltaTime
 	x, y := p.Body.Velocity().X, p.Body.Velocity().Y
 	log.Println(math.Abs(x) + math.Abs(y))
 	if math.Abs(x)+math.Abs(y) > maxSpeed {
@@ -69,23 +71,23 @@ func (p *NetworkPlayer) ApplyKeys() {
 	for _, key := range p.HeldKeys {
 		if key == "W" {
 			p.Body.ApplyImpulseAtLocalPoint(cp.Vector{
-				X: -math.Sin(thrust),
-				Y: -math.Cos(-thrust),
+				X: -math.Sin(tr),
+				Y: -math.Cos(-tr),
 			}, cp.Vector{X: 0, Y: 0})
 		}
 		if key == "A" {
 			rot := p.Body.Angle()
-			p.Body.SetAngle(rot - turn)
+			p.Body.SetAngle(rot - tn)
 			p.Body.SetAngularVelocity(0)
 		}
 		if key == "D" {
 			rot := p.Body.Angle()
-			p.Body.SetAngle(rot + turn)
+			p.Body.SetAngle(rot + tn)
 			p.Body.SetAngularVelocity(0)
 		}
 		if key == "S" {
 			p.Body.SetVelocityVector(p.Body.Velocity().Mult(0.95))
-			p.Body.SetAngularVelocity(0)
+			p.Body.SetAngularVelocity(p.Body.AngularVelocity() * 0.75)
 		}
 	}
 
