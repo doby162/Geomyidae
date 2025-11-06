@@ -49,17 +49,20 @@ func main() {
 
 		pos := body.Position()
 		obj := shared_structs.GameObject{
-			X:             pos.X,
-			Y:             pos.Y,
-			Sprite:        "platformerPack_industrial",
-			SpriteOffsetX: 0,
-			SpriteOffsetY: 0,
-			SpriteWidth:   64,
-			SpriteHeight:  64,
-			Angle:         body.Angle(),
-			UUID:          uuid.New().String(),
-			Body:          body,
-			Shape:         shape,
+			X:                    pos.X,
+			Y:                    pos.Y,
+			Sprite:               "platformerPack_industrial",
+			SpriteOffsetX:        0,
+			SpriteOffsetY:        0,
+			SpriteWidth:          64,
+			SpriteHeight:         64,
+			SpriteFlipHorizontal: td.SpriteFlipHorizontal,
+			SpriteFlipVertical:   td.SpriteFlipVertical,
+			SpriteFlipDiagonal:   td.SpriteFlipDiagonal,
+			Angle:                body.Angle(),
+			UUID:                 uuid.New().String(),
+			Body:                 body,
+			Shape:                shape,
 		}
 
 		physics.AddShape(shape)

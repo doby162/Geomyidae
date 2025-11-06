@@ -74,14 +74,27 @@ type Map struct {
 }
 
 type tileDatum struct {
-	ID               uint32
-	FlipHorizontally bool
-	FlipVertically   bool
-	Row              int
-	Col              int
+	ID                   uint32
+	Row                  int
+	Col                  int
+	Sprite               string `json:"sprite"`
+	SpriteOffsetX        int    `json:"sprite_x0"`
+	SpriteOffsetY        int    `json:"sprite_y0"`
+	SpriteWidth          int    `json:"sprite_x1"`
+	SpriteHeight         int    `json:"sprite_y1"`
+	SpriteFlipHorizontal bool   `json:"sprite_flip_horizontal"`
+	SpriteFlipVertical   bool   `json:"sprite_flip_vertical"`
+	SpriteFlipDiagonal   bool   `json:"sprite_flip_diagonal"`
 }
 
 var tileData []tileDatum
+
+// Bits on the far end of the 32-bit global tile ID are used for tile flags
+// https://doc.mapeditor.org/en/stable/reference/global-tile-ids/#code-example
+const FLIPPED_HORIZONTALLY_FLAG uint32 = 0x80000000
+const FLIPPED_VERTICALLY_FLAG uint32 = 0x40000000
+const FLIPPED_DIAGONALLY_FLAG uint32 = 0x20000000
+const ROTATED_HEXAGONAL_120_FLAG uint32 = 0x10000000
 
 func GetTileData(tileFileInput []byte) []tileDatum {
 	var m Map
@@ -116,38 +129,46 @@ func GetTileData(tileFileInput []byte) []tileDatum {
 		// https://doc.mapeditor.org/en/stable/reference/global-tile-ids/#
 		thisRow := 0
 		thisCol := -1
-		for i := 0; i < len(data); i += 4 {
+		for tileIndex := 0; tileIndex < len(data); tileIndex += 4 {
 			// https://doc.mapeditor.org/en/stable/reference/global-tile-ids/#tile-flipping
 			// The highest four bits of the 32-bit GID are flip flags, and you will need to read and clear them before you can access the GID itself to identify the tile.
 			// Bit 32 is used for storing whether the tile is horizontally flipped, bit 31 is used for the vertically flipped tiles. In orthogonal and isometric maps, bit 30 indicates whether the tile is flipped (anti) diagonally, which enables tile rotation, and bit 29 can be ignored. In hexagonal maps, bit 30 indicates whether the tile is rotated 60 degrees clockwise, and bit 29 indicates 120 degrees clockwise rotation.
 
-			// Flip flag is the highest bit
-			flipHorizontally := (data[i+3] & 0x80) != 0
-			flipVertically := (data[i+3] & 0x40) != 0
+			// https://doc.mapeditor.org/en/stable/reference/global-tile-ids/#code-example
 
-			tileID := binary.LittleEndian.Uint32(data[i : i+4])
+			// Read the GID in little-endian byte order
+			globalTileId := binary.LittleEndian.Uint32(data[tileIndex : tileIndex+4])
+
+			// Read out the flags
+			flipHorizontally := (globalTileId & FLIPPED_HORIZONTALLY_FLAG) != 0
+			flipVertically := (globalTileId & FLIPPED_VERTICALLY_FLAG) != 0
+			flippedDiagonally := (globalTileId & FLIPPED_DIAGONALLY_FLAG) != 0
+			rotatedHex120 := (globalTileId & ROTATED_HEXAGONAL_120_FLAG) != 0
+			_ = rotatedHex120 // (we don't use rotatedHex120 in this project)
+
+			// Clear the flags to get the actual tile ID
+			tileID := globalTileId
 
 			// Clear highest four bits of the most significant byte (safe for a single byte)
+			// to clear off the flip flags
 			tileID &^= 0xF0000000
 
 			thisCol++
 			if thisCol >= chunk.Width {
 				thisCol = 0
 				thisRow++
-				fmt.Println()
 			}
-			fmt.Print(tileID)
 
 			// store tile data
 			tileData = append(tileData, tileDatum{
-				ID:               tileID,
-				FlipHorizontally: flipHorizontally,
-				FlipVertically:   flipVertically,
-				Row:              thisRow + chunk.Y,
-				Col:              thisCol + chunk.X,
+				ID:                   tileID,
+				SpriteFlipHorizontal: flipHorizontally,
+				SpriteFlipVertical:   flipVertically,
+				SpriteFlipDiagonal:   flippedDiagonally,
+				Row:                  thisRow + chunk.Y,
+				Col:                  thisCol + chunk.X,
 			})
 		}
-		fmt.Println()
 	}
 
 	// https://doc.mapeditor.org/en/stable/reference/global-tile-ids/

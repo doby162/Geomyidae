@@ -7,6 +7,7 @@ import (
 	"image"
 	"log"
 	"log/slog"
+	"math"
 	"net/url"
 	"os"
 	"os/signal"
@@ -114,6 +115,15 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	for _, object := range worldMap {
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(-tileHalf, -tileHalf)
+		if object.SpriteFlipHorizontal {
+			op.GeoM.Scale(-1, 1)
+		}
+		if object.SpriteFlipVertical {
+			op.GeoM.Scale(1, -1)
+		}
+		if object.SpriteFlipDiagonal {
+			op.GeoM.Rotate(math.Pi / 2)
+		}
 		op.GeoM.Rotate(object.Angle)
 		op.GeoM.Translate(-cameraX, -cameraY)
 		op.GeoM.Translate(object.X*tileSize-tileHalf, object.Y*tileSize-tileHalf)
@@ -130,7 +140,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 // assets are embedded in package "assets"
 
 func main() {
-	slog.SetLogLoggerLevel(slog.LevelDebug)
+	// slog.SetLogLoggerLevel(slog.LevelDebug)
 	worldMap = make(map[string]*shared_structs.GameObject)
 	beet, err := assets.FS.ReadFile("assets/img/placeholderSprite.png")
 	if err != nil {
