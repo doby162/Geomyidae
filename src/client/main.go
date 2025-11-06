@@ -74,7 +74,7 @@ func (g *Game) Update() error {
 		}
 	}
 
-	// us doesn't seem to exist early on in the web build, so return early until it dies
+	// us doesn't seem to exist early on in the web build, so return early until it does
 	if us == "" {
 		return nil
 	}
