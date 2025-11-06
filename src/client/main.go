@@ -68,8 +68,8 @@ func (g *Game) Update() error {
 
 	if us == "" {
 		for _, obj := range worldMap {
-			if obj.Name == name {
-				us = obj.Name
+			if obj.UUID == name {
+				us = obj.UUID
 			}
 		}
 	}

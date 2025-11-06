@@ -3,10 +3,9 @@ package player
 import (
 	"log"
 	"math"
-	"math/rand"
 	"sync"
-	"time"
 
+	"github.com/google/uuid"
 	"github.com/jakecoffman/cp/v2"
 )
 
@@ -34,7 +33,7 @@ type NetworkPlayer struct {
 func (l *List) NewNetworkPlayer() *NetworkPlayer {
 	l.WriteAccess.Lock()
 	defer l.WriteAccess.Unlock()
-	name := generateRandomString(10)
+	name := uuid.New().String()
 
 	body := cp.NewBody(1, 1)
 	shape := cp.NewBox(body, 1, 1, 0)
@@ -91,14 +90,4 @@ func (p *NetworkPlayer) ApplyKeys() {
 	}
 
 	return
-}
-
-func generateRandomString(length int) string {
-	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	seededRand := rand.New(rand.NewSource(time.Now().UnixNano()))
-	b := make([]byte, length)
-	for i := range b {
-		b[i] = charset[seededRand.Intn(len(charset))]
-	}
-	return string(b)
 }

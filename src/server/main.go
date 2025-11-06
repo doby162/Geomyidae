@@ -55,7 +55,6 @@ func main() {
 			OffsetY: 0,
 			Width:   64,
 			Height:  64,
-			Name:    "",
 			Angle:   body.Angle(),
 			UUID:    uuid.New().String(),
 		}
@@ -109,7 +108,6 @@ func collectWorldState() *shared_structs.WorldData {
 			OffsetY: 0,
 			Width:   98,
 			Height:  75,
-			Name:    networkPlayer.Name,
 			Angle:   networkPlayer.Body.Angle(),
 			UUID:    networkPlayer.Name,
 		})

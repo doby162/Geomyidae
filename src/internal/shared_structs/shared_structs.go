@@ -10,7 +10,6 @@ type GameObject struct {
 	OffsetY int      `json:"sprite_y0"`
 	Width   int      `json:"sprite_x1"`
 	Height  int      `json:"sprite_y1"`
-	Name    string   `json:"name"`
 	Angle   float64  `json:"rotation"`
 	UUID    string   `json:"uuid"`
 	Body    cp.Body  `json:"-"`
