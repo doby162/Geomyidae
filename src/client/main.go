@@ -66,6 +66,7 @@ func (g *Game) Update() error {
 		}
 	}
 
+	mu.Lock()
 	if us == "" {
 		for _, obj := range worldMap {
 			if obj.UUID == name {
@@ -73,15 +74,14 @@ func (g *Game) Update() error {
 			}
 		}
 	}
-
 	// us doesn't seem to exist early on in the web build, so return early until it does
 	if us == "" {
 		return nil
 	}
-
 	// Center camera on player
 	cameraX = (worldMap[us].X * tileSize) - screenWidth/2
 	cameraY = (worldMap[us].Y * tileSize) - screenHeight/2 - (2 * tileSize)
+	mu.Unlock()
 
 	msg := shared_structs.KeyStruct{}
 
