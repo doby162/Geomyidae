@@ -3,17 +3,17 @@ package shared_structs
 import "github.com/jakecoffman/cp/v2"
 
 type GameObject struct {
-	X       float64   `json:"x"`
-	Y       float64   `json:"y"`
-	Sprite  string    `json:"sprite"`
-	OffsetX int       `json:"sprite_x0"`
-	OffsetY int       `json:"sprite_y0"`
-	Width   int       `json:"sprite_x1"`
-	Height  int       `json:"sprite_y1"`
-	Angle   float64   `json:"rotation"`
-	UUID    string    `json:"uuid"`
-	Body    *cp.Body  `json:"-"`
-	Shape   *cp.Shape `json:"-"`
+	X             float64   `json:"x"`
+	Y             float64   `json:"y"`
+	Sprite        string    `json:"sprite"`
+	SpriteOffsetX int       `json:"sprite_x0"`
+	SpriteOffsetY int       `json:"sprite_y0"`
+	SpriteWidth   int       `json:"sprite_x1"`
+	SpriteHeight  int       `json:"sprite_y1"`
+	Angle         float64   `json:"rotation"`
+	UUID          string    `json:"uuid"`
+	Body          *cp.Body  `json:"-"`
+	Shape         *cp.Shape `json:"-"`
 }
 
 type KeyStruct struct {

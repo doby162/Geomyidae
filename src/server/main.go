@@ -49,17 +49,17 @@ func main() {
 
 		pos := body.Position()
 		obj := shared_structs.GameObject{
-			X:       pos.X,
-			Y:       pos.Y,
-			Sprite:  "platformerPack_industrial",
-			OffsetX: 0,
-			OffsetY: 0,
-			Width:   64,
-			Height:  64,
-			Angle:   body.Angle(),
-			UUID:    uuid.New().String(),
-			Body:    body,
-			Shape:   shape,
+			X:             pos.X,
+			Y:             pos.Y,
+			Sprite:        "platformerPack_industrial",
+			SpriteOffsetX: 0,
+			SpriteOffsetY: 0,
+			SpriteWidth:   64,
+			SpriteHeight:  64,
+			Angle:         body.Angle(),
+			UUID:          uuid.New().String(),
+			Body:          body,
+			Shape:         shape,
 		}
 
 		physics.AddShape(shape)
@@ -100,17 +100,17 @@ func main() {
 				physics.AddShape(shape)
 
 				dynamicObjectList = append(dynamicObjectList, &shared_structs.GameObject{
-					X:       x,
-					Y:       y,
-					Sprite:  "spaceShooterRedux",
-					OffsetX: 0,
-					OffsetY: 0,
-					Width:   16,
-					Height:  16,
-					Angle:   body.Angle(),
-					UUID:    uuid.New().String(),
-					Body:    body,
-					Shape:   shape,
+					X:             x,
+					Y:             y,
+					Sprite:        "spaceShooterRedux",
+					SpriteOffsetX: 0,
+					SpriteOffsetY: 0,
+					SpriteWidth:   16,
+					SpriteHeight:  16,
+					Angle:         body.Angle(),
+					UUID:          uuid.New().String(),
+					Body:          body,
+					Shape:         shape,
 				})
 			}
 		}
@@ -141,15 +141,15 @@ func collectWorldState() *shared_structs.WorldData {
 		pos := networkPlayer.Body.Position()
 		x, y := pos.X, pos.Y
 		data.Objects = append(data.Objects, shared_structs.GameObject{
-			X:       x,
-			Y:       y,
-			Sprite:  "spaceShooterRedux",
-			OffsetX: 325,
-			OffsetY: 0,
-			Width:   98,
-			Height:  75,
-			Angle:   networkPlayer.Body.Angle(),
-			UUID:    networkPlayer.Name,
+			X:             x,
+			Y:             y,
+			Sprite:        "spaceShooterRedux",
+			SpriteOffsetX: 325,
+			SpriteOffsetY: 0,
+			SpriteWidth:   98,
+			SpriteHeight:  75,
+			Angle:         networkPlayer.Body.Angle(),
+			UUID:          networkPlayer.Name,
 		})
 	}
 	if includeStaticAndAsleep {

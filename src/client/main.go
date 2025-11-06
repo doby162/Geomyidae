@@ -117,7 +117,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		op.GeoM.Rotate(object.Angle)
 		op.GeoM.Translate(-cameraX, -cameraY)
 		op.GeoM.Translate(object.X*tileSize-tileHalf, object.Y*tileSize-tileHalf)
-		screen.DrawImage(sprites[object.Sprite].SubImage(image.Rect(object.OffsetX, object.OffsetY, object.OffsetX+object.Width, object.OffsetY+object.Height)).(*ebiten.Image), op)
+		screen.DrawImage(sprites[object.Sprite].SubImage(image.Rect(object.SpriteOffsetX, object.SpriteOffsetY, object.SpriteOffsetX+object.SpriteWidth, object.SpriteOffsetY+object.SpriteHeight)).(*ebiten.Image), op)
 	}
 
 	ebitenutil.DebugPrint(screen, "Camera position: "+fmt.Sprintf("%.2f, %.2f, goroutines:%v", cameraX, cameraY, runtime.NumGoroutine()))
