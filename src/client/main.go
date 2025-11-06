@@ -154,6 +154,12 @@ func main() {
 	}
 	platformPackImg, _, _ := image.Decode(bytes.NewReader(platformPackData))
 
+	platformerIndustrialExpansionTilesetData, err := assets.FS.ReadFile("assets/img/kenny_pixel_platformer_industrial_expansion_tileset_64x64.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	platformerIndustrialExpansionTilesetImg, _, _ := image.Decode(bytes.NewReader(platformerIndustrialExpansionTilesetData))
+
 	spaceShooterReduxData, err := assets.FS.ReadFile("assets/img/spaceShooterRedux_sheet.png")
 	if err != nil {
 		log.Fatal(err)
@@ -163,7 +169,8 @@ func main() {
 	// Create sprites map
 	sprites = make(map[string]*ebiten.Image)
 	sprites["player_01"] = ebiten.NewImageFromImage(bert)
-	sprites["platformerPack_industrial"] = ebiten.NewImageFromImage(platformPackImg)
+	sprites["platformerPack_industrial_tilesheet_64x64"] = ebiten.NewImageFromImage(platformPackImg)
+	sprites["kenny_pixel_platformer_industrial_expansion_tileset_64x64"] = ebiten.NewImageFromImage(platformerIndustrialExpansionTilesetImg)
 	sprites["spaceShooterRedux"] = ebiten.NewImageFromImage(spaceShooterReduxImg)
 
 	// Connect to WebSocket server

@@ -37,9 +37,9 @@ type Map struct {
 			Format string `xml:"format,attr"`
 		} `xml:"export"`
 	} `xml:"editorsettings"`
-	Tileset struct {
+	Tileset []struct {
 		Text       string `xml:",chardata"`
-		Firstgid   string `xml:"firstgid,attr"`
+		Firstgid   int    `xml:"firstgid,attr"`
 		Name       string `xml:"name,attr"`
 		Tilewidth  int    `xml:"tilewidth,attr"`
 		Tileheight int    `xml:"tileheight,attr"`
@@ -146,12 +146,27 @@ func GetTileData(tileFileInput []byte) []tileDatum {
 			rotatedHex120 := (globalTileId & ROTATED_HEXAGONAL_120_FLAG) != 0
 			_ = rotatedHex120 // (we don't use rotatedHex120 in this project)
 
-			// Clear the flags to get the actual tile ID
-			tileID := globalTileId
-
 			// Clear highest four bits of the most significant byte (safe for a single byte)
 			// to clear off the flip flags
-			tileID &^= 0xF0000000
+			globalTileId &^= 0xF0000000
+
+			tileID := globalTileId
+
+			sprite := m.Tileset[0].Name // default sprite name
+			SpriteOffsetX := (tileID - 1) % uint32(m.Tileset[0].Columns) * uint32(m.Tileset[0].Tilewidth)
+			SpriteOffsetY := (tileID - 1) / uint32(m.Tileset[0].Columns) * uint32(m.Tileset[0].Tileheight)
+
+			// Resolve the tile
+			for i := len(m.Tileset) - 1; i >= 0; i-- {
+				tileset := m.Tileset[i]
+
+				if uint32(tileset.Firstgid) <= globalTileId {
+					sprite = tileset.Name
+					SpriteOffsetX = (tileID - uint32(tileset.Firstgid)) % uint32(tileset.Columns) * uint32(tileset.Tilewidth)
+					SpriteOffsetY = (tileID - uint32(tileset.Firstgid)) / uint32(tileset.Columns) * uint32(tileset.Tileheight)
+					break
+				}
+			}
 
 			thisCol++
 			if thisCol >= chunk.Width {
@@ -162,6 +177,11 @@ func GetTileData(tileFileInput []byte) []tileDatum {
 			// store tile data
 			tileData = append(tileData, tileDatum{
 				ID:                   tileID,
+				Sprite:               sprite,
+				SpriteOffsetX:        int(SpriteOffsetX),
+				SpriteOffsetY:        int(SpriteOffsetY),
+				SpriteWidth:          m.Tilewidth,
+				SpriteHeight:         m.Tileheight,
 				SpriteFlipHorizontal: flipHorizontally,
 				SpriteFlipVertical:   flipVertically,
 				SpriteFlipDiagonal:   flippedDiagonally,
