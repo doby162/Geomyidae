@@ -1,7 +1,6 @@
 package player
 
 import (
-	"log"
 	"math"
 	"sync"
 
@@ -28,6 +27,8 @@ type NetworkPlayer struct {
 	Shape        *cp.Shape
 	HeldKeys     []string
 	NeedsStatics bool
+	shootTime    float64
+	ShootFlag    bool
 }
 
 func (l *List) NewNetworkPlayer() *NetworkPlayer {
@@ -64,9 +65,11 @@ func (p *NetworkPlayer) ApplyKeys(deltaTime float64) {
 	tr := thrust * deltaTime
 	tn := turn * deltaTime
 	x, y := p.Body.Velocity().X, p.Body.Velocity().Y
-	log.Println(math.Abs(x) + math.Abs(y))
 	if math.Abs(x)+math.Abs(y) > maxSpeed {
 		p.Body.SetVelocityVector(p.Body.Velocity().Mult(0.95))
+	}
+	if p.shootTime >= 0 {
+		p.shootTime -= deltaTime
 	}
 	for _, key := range p.HeldKeys {
 		if key == "W" {
@@ -88,6 +91,10 @@ func (p *NetworkPlayer) ApplyKeys(deltaTime float64) {
 		if key == "S" {
 			p.Body.SetVelocityVector(p.Body.Velocity().Mult(0.95))
 			p.Body.SetAngularVelocity(p.Body.AngularVelocity() * 0.75)
+		}
+		if key == "E" && p.shootTime <= 0 {
+			p.shootTime = 0.5 // seconds
+			p.ShootFlag = true
 		}
 	}
 

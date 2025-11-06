@@ -4,6 +4,7 @@ import (
 	"Geomyidae/server/player"
 	"Geomyidae/server/sock_server"
 	"encoding/json"
+	"math"
 	"time"
 
 	"github.com/google/uuid"
@@ -57,6 +58,8 @@ func main() {
 			Height:  64,
 			Angle:   body.Angle(),
 			UUID:    uuid.New().String(),
+			Body:    body,
+			Shape:   shape,
 		}
 
 		physics.AddShape(shape)
@@ -73,6 +76,43 @@ func main() {
 		deltaTime := time.Now().Sub(prevTime).Seconds()
 		for _, networkPlayer := range playerList.Players {
 			networkPlayer.ApplyKeys(deltaTime)
+			if networkPlayer.ShootFlag {
+				log.Println(networkPlayer.Name)
+				networkPlayer.ShootFlag = false
+				body := cp.NewBody(1, 1)
+				shape := cp.NewCircle(body, 0.125, cp.Vector{X: 0, Y: 0})
+				shape.SetElasticity(0.25)
+				shape.SetDensity(0.5)
+				shape.SetFriction(1.0)
+				body.AddShape(shape)
+				pos := networkPlayer.Body.Position()
+				x := pos.X
+				y := pos.Y
+				angle := networkPlayer.Body.Angle()
+				thrust := 40.0
+				offset := 1.0
+				x = x + math.Sin(angle)*offset
+				y = y + math.Cos(angle)*(offset*-1)
+				body.SetVelocity(math.Sin(angle)*thrust, math.Cos(angle)*(-1*thrust))
+				body.SetPosition(cp.Vector{X: x, Y: y})
+
+				physics.AddBody(body)
+				physics.AddShape(shape)
+
+				dynamicObjectList = append(dynamicObjectList, &shared_structs.GameObject{
+					X:       x,
+					Y:       y,
+					Sprite:  "spaceShooterRedux",
+					OffsetX: 0,
+					OffsetY: 0,
+					Width:   16,
+					Height:  16,
+					Angle:   body.Angle(),
+					UUID:    uuid.New().String(),
+					Body:    body,
+					Shape:   shape,
+				})
+			}
 		}
 		prevTime = time.Now()
 		physics.Step(deltaTime)
