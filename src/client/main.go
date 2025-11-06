@@ -51,6 +51,11 @@ type UserConfig struct {
 var userConfig UserConfig
 
 func (g *Game) Update() error {
+	// If worldMap is not yet initialized, skip update
+	if len(worldMap) == 0 {
+		return nil
+	}
+
 	winX, winY := ebiten.WindowPosition()
 	if userConfig.ConfigPath != "" && (winX != userConfig.WindowPositionX || winY != userConfig.WindowPositionY) {
 		userConfig.WindowPositionX = winX
@@ -74,10 +79,7 @@ func (g *Game) Update() error {
 			}
 		}
 	}
-	// us doesn't seem to exist early on in the web build, so return early until it does
-	if us == "" {
-		return nil
-	}
+
 	// Center camera on player
 	cameraX = (worldMap[us].X * tileSize) - screenWidth/2
 	cameraY = (worldMap[us].Y * tileSize) - screenHeight/2 - (2 * tileSize)
