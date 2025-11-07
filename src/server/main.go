@@ -80,7 +80,6 @@ func main() {
 		for _, networkPlayer := range playerList.Players {
 			networkPlayer.ApplyKeys(deltaTime)
 			if networkPlayer.ShootFlag {
-				log.Println(networkPlayer.Name)
 				networkPlayer.ShootFlag = false
 				body := cp.NewBody(1, 1)
 				shape := cp.NewCircle(body, 0.125, cp.Vector{X: 0, Y: 0})
@@ -124,7 +123,7 @@ func main() {
 		data := collectWorldState()
 
 		for sock, _ := range hub.Clients {
-			data.Name = sock.Player.Name
+			data.Name = sock.Player.UUID
 			msg, _ := json.Marshal(data)
 			sock.Send <- msg
 		}
@@ -143,19 +142,9 @@ func collectWorldState() *shared_structs.WorldData {
 			networkPlayer.NeedsStatics = false
 		}
 		pos := networkPlayer.Body.Position()
-		x, y := pos.X, pos.Y
-		data.Objects = append(data.Objects, shared_structs.GameObject{
-			X:             x,
-			Y:             y,
-			Sprite:        "spaceShooterRedux",
-			SpriteOffsetX: 325,
-			SpriteOffsetY: 0,
-			SpriteWidth:   98,
-			SpriteHeight:  75,
-			Angle:         networkPlayer.Body.Angle(),
-			UUID:          networkPlayer.Name,
-			Delete:        networkPlayer.Delete,
-		})
+		networkPlayer.X, networkPlayer.Y = pos.X, pos.Y
+		networkPlayer.Angle = networkPlayer.Body.Angle()
+		data.Objects = append(data.Objects, *networkPlayer.GameObject)
 		if networkPlayer.Delete {
 			physics.RemoveBody(networkPlayer.Body)
 			physics.RemoveShape(networkPlayer.Shape)
@@ -164,8 +153,8 @@ func collectWorldState() *shared_structs.WorldData {
 	}
 	if removedPlayer != nil {
 		for _, removed := range removedPlayer {
-			log.Println("removed player", removed.Name)
-			delete(playerList.Players, removed.Name)
+			log.Println("removed player", removed.UUID)
+			delete(playerList.Players, removed.UUID)
 		}
 	}
 	if includeStaticAndAsleep {

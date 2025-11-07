@@ -1,6 +1,7 @@
 package player
 
 import (
+	"Geomyidae/internal/shared_structs"
 	"math"
 	"sync"
 
@@ -20,16 +21,13 @@ func NewList(physics *cp.Space) *List {
 }
 
 type NetworkPlayer struct {
-	Sprite       string
+	*shared_structs.GameObject
+
 	canJump      bool
-	Name         string
-	Body         *cp.Body
-	Shape        *cp.Shape
 	HeldKeys     []string
 	NeedsStatics bool
 	shootTime    float64
 	ShootFlag    bool
-	Delete       bool
 }
 
 func (l *List) NewNetworkPlayer() *NetworkPlayer {
@@ -49,8 +47,16 @@ func (l *List) NewNetworkPlayer() *NetworkPlayer {
 	l.Physics.AddShape(shape)
 	l.Physics.AddBody(body)
 
-	l.Players[name] = &NetworkPlayer{Sprite: "player_01", HeldKeys: []string{}, Name: name, canJump: true, Body: body,
-		Shape: shape, NeedsStatics: true}
+	l.Players[name] = &NetworkPlayer{GameObject: &shared_structs.GameObject{
+		Sprite:        "spaceShooterRedux",
+		UUID:          name,
+		Body:          body,
+		Shape:         shape,
+		SpriteOffsetX: 325,
+		SpriteOffsetY: 0,
+		SpriteWidth:   98,
+		SpriteHeight:  75,
+	}, HeldKeys: []string{}, canJump: true, NeedsStatics: true}
 	return l.Players[name]
 }
 
