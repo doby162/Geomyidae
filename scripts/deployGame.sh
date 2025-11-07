@@ -138,6 +138,7 @@ if [[ "${REMOTE_HOST}" != "" ]]; then
 
   cd "${PROJECT_PATH}/src" || exit
   scp.exe "${GAME_NAME}-server" "${USER}@${REMOTE_HOST}:/mnt/2000/container-mounts/caddy/${GAME_NAME}/"
+  rm "${GAME_NAME}-server"
 
   printf "\n${YELLOW}Restarting Server${NC}\n"
   # shellcheck disable=SC2029
