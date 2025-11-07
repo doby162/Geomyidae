@@ -33,3 +33,4 @@ go.work.sum
 tmp/
 web/geomyidae.wasm
 web/wasm_exec.js
+src/geomyidae-server
