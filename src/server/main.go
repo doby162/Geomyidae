@@ -133,6 +133,7 @@ func main() {
 }
 
 func collectWorldState() *shared_structs.WorldData {
+	var removedPlayer []*player.NetworkPlayer
 	data := shared_structs.WorldData{}
 	includeStaticAndAsleep := false
 	for _, networkPlayer := range playerList.Players {
@@ -153,7 +154,19 @@ func collectWorldState() *shared_structs.WorldData {
 			SpriteHeight:  75,
 			Angle:         networkPlayer.Body.Angle(),
 			UUID:          networkPlayer.Name,
+			Delete:        networkPlayer.Delete,
 		})
+		if networkPlayer.Delete {
+			physics.RemoveBody(networkPlayer.Body)
+			physics.RemoveShape(networkPlayer.Shape)
+			removedPlayer = append(removedPlayer, networkPlayer)
+		}
+	}
+	if removedPlayer != nil {
+		for _, removed := range removedPlayer {
+			log.Println("removed player", removed.Name)
+			delete(playerList.Players, removed.Name)
+		}
 	}
 	if includeStaticAndAsleep {
 		for _, object := range staticObjectList {

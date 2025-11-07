@@ -29,6 +29,7 @@ type NetworkPlayer struct {
 	NeedsStatics bool
 	shootTime    float64
 	ShootFlag    bool
+	Delete       bool
 }
 
 func (l *List) NewNetworkPlayer() *NetworkPlayer {

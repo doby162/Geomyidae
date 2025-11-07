@@ -209,7 +209,11 @@ func main() {
 			mu.Lock()
 			for _, object := range newState.Objects {
 				key := object.UUID
-				worldMap[key] = &object
+				if object.Delete {
+					delete(worldMap, key)
+				} else {
+					worldMap[key] = &object
+				}
 			}
 			mu.Unlock()
 		}

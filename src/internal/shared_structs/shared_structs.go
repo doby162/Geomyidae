@@ -17,14 +17,13 @@ type GameObject struct {
 	UUID                 string    `json:"uuid"`
 	Body                 *cp.Body  `json:"-"`
 	Shape                *cp.Shape `json:"-"`
+	Delete               bool      `json:"delete"`
 }
 
 type KeyStruct struct {
 	Keys []string `json:"keys"`
 }
 
-// Objects gets turned into a map later so... maybe it should just be a map
-// todo I guess
 type WorldData struct {
 	Name    string       `json:"name"`
 	Objects []GameObject `json:"objects"`
