@@ -13,23 +13,24 @@ type List struct {
 	Players     map[string]*NetworkPlayer
 	Physics     *cp.Space
 	WriteAccess sync.Mutex
+	apOb        func(networkPlayer *NetworkPlayer)
 }
 
-func NewList(physics *cp.Space) *List {
+func NewList(physics *cp.Space, fn func(networkPlayer *NetworkPlayer)) *List {
 	players := make(map[string]*NetworkPlayer)
-	return &List{Players: players, WriteAccess: sync.Mutex{}, Physics: physics}
+	return &List{Players: players, WriteAccess: sync.Mutex{}, Physics: physics, apOb: fn}
 }
 
 type NetworkPlayer struct {
 	*shared_structs.GameObject
 
-	canJump      bool
-	HeldKeys     []string
-	NeedsStatics bool
-	shootTime    float64
-	ShootFlag    bool
+	canJump   bool
+	HeldKeys  []string
+	shootTime float64
 }
 
+// NewNetworkPlayer creates a network player and stores a pointer to it in both the master list and the network player list
+// both values are the same pointer, it does not matter which you use, but you cannot reassign the pointer later
 func (l *List) NewNetworkPlayer() *NetworkPlayer {
 	l.WriteAccess.Lock()
 	defer l.WriteAccess.Unlock()
@@ -47,7 +48,7 @@ func (l *List) NewNetworkPlayer() *NetworkPlayer {
 	l.Physics.AddShape(shape)
 	l.Physics.AddBody(body)
 
-	l.Players[name] = &NetworkPlayer{GameObject: &shared_structs.GameObject{
+	player := NetworkPlayer{GameObject: &shared_structs.GameObject{
 		Sprite:        "spaceShooterRedux",
 		UUID:          name,
 		Body:          body,
@@ -56,8 +57,13 @@ func (l *List) NewNetworkPlayer() *NetworkPlayer {
 		SpriteOffsetY: 0,
 		SpriteWidth:   98,
 		SpriteHeight:  75,
-	}, HeldKeys: []string{}, canJump: true, NeedsStatics: true}
-	return l.Players[name]
+		NeedsStatics:  true,
+	}, HeldKeys: []string{}, canJump: true}
+	point := &player
+	l.apOb(point)
+	l.Players[name] = point
+
+	return &player
 }
 
 // these could be multiplied by delta time
@@ -65,7 +71,7 @@ const thrust = 2
 const maxSpeed = 30.0
 const turn = 2
 
-func (p *NetworkPlayer) ApplyKeys(deltaTime float64) {
+func (p *NetworkPlayer) ApplyBehavior(deltaTime float64) {
 	//p.Body.EachArbiter(func(arbiter *cp.Arbiter) {
 	//bodA, bodB := arbiter.Bodies()
 	//})
@@ -106,4 +112,8 @@ func (p *NetworkPlayer) ApplyKeys(deltaTime float64) {
 	}
 
 	return
+}
+
+func (p *NetworkPlayer) GetObject() *shared_structs.GameObject {
+	return p.GameObject
 }

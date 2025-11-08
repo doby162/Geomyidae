@@ -5,19 +5,27 @@ import "github.com/jakecoffman/cp/v2"
 type GameObject struct {
 	X                    float64   `json:"x"`
 	Y                    float64   `json:"y"`
-	Sprite               string    `json:"sprite"`
-	SpriteOffsetX        int       `json:"sprite_x0"`
-	SpriteOffsetY        int       `json:"sprite_y0"`
-	SpriteWidth          int       `json:"sprite_x1"`
-	SpriteHeight         int       `json:"sprite_y1"`
-	SpriteFlipHorizontal bool      `json:"sprite_flip_horizontal"`
-	SpriteFlipVertical   bool      `json:"sprite_flip_vertical"`
-	SpriteFlipDiagonal   bool      `json:"sprite_flip_diagonal"`
-	Angle                float64   `json:"rotation"`
-	UUID                 string    `json:"uuid"`
+	Sprite               string    `json:"s"`
+	SpriteOffsetX        int       `json:"sx0"`
+	SpriteOffsetY        int       `json:"sy0"`
+	SpriteWidth          int       `json:"sx1"`
+	SpriteHeight         int       `json:"sy1"`
+	SpriteFlipHorizontal bool      `json:"sfh"`
+	SpriteFlipVertical   bool      `json:"sfv"`
+	SpriteFlipDiagonal   bool      `json:"sfd"`
+	Angle                float64   `json:"rot"`
+	UUID                 string    `json:"id"`
 	Body                 *cp.Body  `json:"-"`
 	Shape                *cp.Shape `json:"-"`
-	Delete               bool      `json:"delete"`
+	Delete               bool      `json:"del"`
+	ShootFlag            bool      `json:"-"`
+	NeedsStatics         bool      `json:"-"`
+	IsStatic             bool      `json:"-"`
+}
+
+type HasBehavior interface {
+	ApplyBehavior(deltaTime float64)
+	GetObject() *GameObject
 }
 
 type KeyStruct struct {

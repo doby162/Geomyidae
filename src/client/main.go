@@ -29,7 +29,6 @@ const (
 	screenWidth  = 1280
 	screenHeight = 832
 	tileSize     = 64
-	tileHalf     = 32
 )
 
 var sprites map[string]*ebiten.Image
@@ -82,8 +81,10 @@ func (g *Game) Update() error {
 	}
 
 	// Center camera on player
-	cameraX = (worldMap[us].X * tileSize) - screenWidth/2
-	cameraY = (worldMap[us].Y * tileSize) - screenHeight/2 - (2 * tileSize)
+	if us != "" {
+		cameraX = (worldMap[us].X * tileSize) - screenWidth/2
+		cameraY = (worldMap[us].Y * tileSize) - screenHeight/2 - (2 * tileSize)
+	}
 	mu.Unlock()
 
 	msg := shared_structs.KeyStruct{}
@@ -142,11 +143,6 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 func main() {
 	// slog.SetLogLoggerLevel(slog.LevelDebug)
 	worldMap = make(map[string]*shared_structs.GameObject)
-	beet, err := assets.FS.ReadFile("assets/img/placeholderSprite.png")
-	if err != nil {
-		log.Fatal(err)
-	}
-	bert, _, _ := image.Decode(bytes.NewReader(beet))
 
 	platformPackData, err := assets.FS.ReadFile("assets/img/platformerPack_industrial_tilesheet_64x64.png")
 	if err != nil {
@@ -168,7 +164,6 @@ func main() {
 
 	// Create sprites map
 	sprites = make(map[string]*ebiten.Image)
-	sprites["player_01"] = ebiten.NewImageFromImage(bert)
 	sprites["platformerPack_industrial_tilesheet_64x64"] = ebiten.NewImageFromImage(platformPackImg)
 	sprites["kenny_pixel_platformer_industrial_expansion_tileset_64x64"] = ebiten.NewImageFromImage(platformerIndustrialExpansionTilesetImg)
 	sprites["spaceShooterRedux"] = ebiten.NewImageFromImage(spaceShooterReduxImg)
