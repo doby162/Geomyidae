@@ -18,6 +18,9 @@ import (
 )
 
 var physics *cp.Space
+
+const metersToPixels = 64
+
 var prevTime time.Time
 
 // players is a subset of simulationObjects. Every value it contains is a duplicate
@@ -53,10 +56,7 @@ func main() {
 		body.AddShape(shape)
 		body.SetPosition(cp.Vector{X: float64(td.Col) + 0.5, Y: float64(td.Row) + 0.5})
 
-		pos := body.Position()
 		obj := tile{&shared_structs.GameObject{
-			X:                    pos.X,
-			Y:                    pos.Y,
 			Sprite:               td.Sprite,
 			SpriteOffsetX:        td.SpriteOffsetX,
 			SpriteOffsetY:        td.SpriteOffsetY,
@@ -119,8 +119,6 @@ func main() {
 				simulationObjects = append(simulationObjects, bullet{
 					expirationDate: time.Now().Add(time.Second * 5),
 					GameObject: &shared_structs.GameObject{
-						X:             x,
-						Y:             y,
 						Sprite:        "spaceShooterRedux",
 						SpriteOffsetX: 0,
 						SpriteOffsetY: 0,
@@ -142,8 +140,8 @@ func main() {
 		for _, obj := range simulationObjects {
 			gameObj := obj.GetObject()
 			pos := gameObj.Body.Position()
-			gameObj.X = pos.X
-			gameObj.Y = pos.Y
+			gameObj.X = pos.X * metersToPixels
+			gameObj.Y = pos.Y * metersToPixels
 			gameObj.Angle = gameObj.Body.Angle()
 		}
 

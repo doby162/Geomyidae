@@ -28,7 +28,6 @@ import (
 const (
 	screenWidth  = 1280
 	screenHeight = 832
-	tileSize     = 64
 )
 
 var sprites map[string]*ebiten.Image
@@ -82,8 +81,8 @@ func (g *Game) Update() error {
 
 	// Center camera on player
 	if us != "" {
-		cameraX = (worldMap[us].X * tileSize) - screenWidth/2
-		cameraY = (worldMap[us].Y * tileSize) - screenHeight/2 - (2 * tileSize)
+		cameraX = worldMap[us].X - screenWidth/2
+		cameraY = worldMap[us].Y - screenHeight/2
 	}
 	mu.Unlock()
 
@@ -127,7 +126,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 		op.GeoM.Rotate(object.Angle)
 		op.GeoM.Translate(-cameraX, -cameraY)
-		op.GeoM.Translate(object.X*tileSize-float64(object.SpriteWidth/2), object.Y*tileSize-float64(object.SpriteHeight/2))
+		op.GeoM.Translate(object.X-float64(object.SpriteWidth/2), object.Y-float64(object.SpriteHeight/2))
 		screen.DrawImage(sprites[object.Sprite].SubImage(image.Rect(object.SpriteOffsetX, object.SpriteOffsetY, object.SpriteOffsetX+object.SpriteWidth, object.SpriteOffsetY+object.SpriteHeight)).(*ebiten.Image), op)
 	}
 
