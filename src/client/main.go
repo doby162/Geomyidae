@@ -114,7 +114,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	defer mu.Unlock()
 	for _, object := range worldMap {
 		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(-tileHalf, -tileHalf)
+		op.GeoM.Translate(-float64(object.SpriteWidth/2), -float64(object.SpriteHeight/2))
 		if object.SpriteFlipHorizontal {
 			op.GeoM.Scale(-1, 1)
 		}
@@ -126,7 +126,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 		op.GeoM.Rotate(object.Angle)
 		op.GeoM.Translate(-cameraX, -cameraY)
-		op.GeoM.Translate(object.X*tileSize-tileHalf, object.Y*tileSize-tileHalf)
+		op.GeoM.Translate(object.X*tileSize-float64(object.SpriteWidth/2), object.Y*tileSize-float64(object.SpriteHeight/2))
 		screen.DrawImage(sprites[object.Sprite].SubImage(image.Rect(object.SpriteOffsetX, object.SpriteOffsetY, object.SpriteOffsetX+object.SpriteWidth, object.SpriteOffsetY+object.SpriteHeight)).(*ebiten.Image), op)
 	}
 
