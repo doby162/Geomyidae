@@ -1,8 +1,10 @@
 package main
 
 import (
+	"Geomyidae/server/bullet"
 	"Geomyidae/server/player"
 	"Geomyidae/server/sock_server"
+	"Geomyidae/server/tile"
 	"encoding/json"
 	"math"
 	"sort"
@@ -61,21 +63,22 @@ func main() {
 		body.AddShape(shape)
 		body.SetPosition(cp.Vector{X: float64(td.Col) + 0.5, Y: float64(td.Row) + 0.5})
 
-		obj := tile{&shared_structs.GameObject{
-			Sprite:               td.Sprite,
-			SpriteOffsetX:        td.SpriteOffsetX,
-			SpriteOffsetY:        td.SpriteOffsetY,
-			SpriteWidth:          td.SpriteWidth,
-			SpriteHeight:         td.SpriteHeight,
-			SpriteFlipHorizontal: td.SpriteFlipHorizontal,
-			SpriteFlipVertical:   td.SpriteFlipVertical,
-			SpriteFlipDiagonal:   td.SpriteFlipDiagonal,
-			Angle:                body.Angle(),
-			UUID:                 uuid.New().String(),
-			Body:                 body,
-			Shape:                shape,
-			IsStatic:             true,
-		}}
+		obj := tile.NewTile(
+			&shared_structs.GameObject{
+				Sprite:               td.Sprite,
+				SpriteOffsetX:        td.SpriteOffsetX,
+				SpriteOffsetY:        td.SpriteOffsetY,
+				SpriteWidth:          td.SpriteWidth,
+				SpriteHeight:         td.SpriteHeight,
+				SpriteFlipHorizontal: td.SpriteFlipHorizontal,
+				SpriteFlipVertical:   td.SpriteFlipVertical,
+				SpriteFlipDiagonal:   td.SpriteFlipDiagonal,
+				Angle:                body.Angle(),
+				UUID:                 uuid.New().String(),
+				Body:                 body,
+				Shape:                shape,
+				IsStatic:             true,
+			})
 
 		physics.AddShape(shape)
 		simulationObjects = append(simulationObjects, obj)
@@ -111,7 +114,7 @@ func main() {
 				x := pos.X
 				y := pos.Y
 				angle := gameObj.Body.Angle()
-				thrust := 40.0
+				thrust := 35.0
 				offset := 1.0
 				x = x + math.Sin(angle)*offset
 				y = y + math.Cos(angle)*(offset*-1)
@@ -121,9 +124,8 @@ func main() {
 				physics.AddBody(body)
 				physics.AddShape(shape)
 
-				simulationObjects = append(simulationObjects, bullet{
-					expirationDate: time.Now().Add(time.Second * 5),
-					GameObject: &shared_structs.GameObject{
+				simulationObjects = append(simulationObjects,
+					bullet.NewBullet(&shared_structs.GameObject{
 						Sprite:        "spaceShooterRedux",
 						SpriteOffsetX: 0,
 						SpriteOffsetY: 0,
@@ -133,8 +135,7 @@ func main() {
 						UUID:          uuid.New().String(),
 						Body:          body,
 						Shape:         shape,
-					},
-				})
+					}))
 			}
 		}
 
@@ -191,34 +192,6 @@ func collectWorldState(includeStaticAndAsleep bool) *shared_structs.WorldData {
 	}
 	simulationObjects = removeIndexes(simulationObjects, removedIndexes)
 	return &data
-}
-
-// todo move bullet and tile methods to their own packages like players have
-type bullet struct {
-	*shared_structs.GameObject
-	expirationDate time.Time
-}
-
-type tile struct {
-	*shared_structs.GameObject
-}
-
-func (b bullet) ApplyBehavior(deltaTime float64) {
-	if b.expirationDate.UnixMilli() < time.Now().UnixMilli() {
-		b.GameObject.Delete = true
-	}
-}
-
-func (t tile) ApplyBehavior(deltaTime float64) {
-	return
-}
-
-func (b bullet) GetObject() *shared_structs.GameObject {
-	return b.GameObject
-}
-
-func (t tile) GetObject() *shared_structs.GameObject {
-	return t.GameObject
 }
 
 // removeIndexes removes elements from a slice at the given indices.

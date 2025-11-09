@@ -68,7 +68,7 @@ func (l *List) NewNetworkPlayer() *NetworkPlayer {
 
 // these could be multiplied by delta time
 const thrust = 2
-const maxSpeed = 30.0
+const maxSpeed = 25.0
 const turn = 2
 
 func (p *NetworkPlayer) ApplyBehavior(deltaTime float64) {
