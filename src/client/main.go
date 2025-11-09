@@ -34,8 +34,6 @@ var sprites map[string]*ebiten.Image
 
 type Game struct{}
 
-var us string
-var name string
 var worldMap map[string]*shared_structs.GameObject
 var mu sync.Mutex
 var oldKeys shared_structs.KeyStruct
@@ -69,22 +67,6 @@ func (g *Game) Update() error {
 			configFile.Close()
 		}
 	}
-
-	mu.Lock()
-	if us == "" {
-		for _, obj := range worldMap {
-			if obj.UUID == name {
-				us = obj.UUID
-			}
-		}
-	}
-
-	// Center camera on player
-	if us != "" {
-		cameraX = worldMap[us].X - screenWidth/2
-		cameraY = worldMap[us].Y - screenHeight/2
-	}
-	mu.Unlock()
 
 	msg := shared_structs.KeyStruct{}
 
@@ -199,10 +181,12 @@ func main() {
 			if err != nil {
 				slog.Error("unmarshal:", err)
 			}
-			name = newState.Name
 			mu.Lock()
 			for _, object := range newState.Objects {
 				key := object.UUID
+				if key == newState.Name {
+					cameraX, cameraY = object.X-screenWidth/2, object.Y-screenHeight/2
+				}
 				if object.Delete {
 					delete(worldMap, key)
 				} else {
