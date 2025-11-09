@@ -11,7 +11,6 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/hajimehoshi/ebiten/v2 v2.9.3
 	github.com/jakecoffman/cp/v2 v2.3.1
-	github.com/oliverbestmann/box2d-go v0.1.1
 )
 
 require (

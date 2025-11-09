@@ -16,8 +16,6 @@ github.com/jakecoffman/cp/v2 v2.3.1 h1:evKpuQ6ljLpvvlHxDpakSBy/LC4m4yXiGqwwZVqcn
 github.com/jakecoffman/cp/v2 v2.3.1/go.mod h1:6lPSBgxx6+//RIlSaMH3XaXtcCwPY1ZCJox1ThK5bZw=
 github.com/jezek/xgb v1.1.1 h1:bE/r8ZZtSv7l9gk6nU0mYx51aXrvnyb44892TwSaqS4=
 github.com/jezek/xgb v1.1.1/go.mod h1:nrhwO0FX/enq75I7Y7G8iN1ubpSGZEiA3v9e9GyRFlk=
-github.com/oliverbestmann/box2d-go v0.1.1 h1:co9A+JEfslgfmI7NfVAd2PnJxeiY3nFV39XtsV9KKQ4=
-github.com/oliverbestmann/box2d-go v0.1.1/go.mod h1:1fuzkQOCSnu18iHuruiJriNmrKsMEk9fEH3SJ7MHoic=
 golang.org/x/image v0.31.0 h1:mLChjE2MV6g1S7oqbXC0/UcKijjm5fnJLUYKIYrLESA=
 golang.org/x/image v0.31.0/go.mod h1:R9ec5Lcp96v9FTF+ajwaH3uGxPH4fKfHHAVbUILxghA=
 golang.org/x/sync v0.17.0 h1:l60nONMj9l5drqw6jlhIELNv9I0A4OFgRsG9k2oT9Ug=

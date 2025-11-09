@@ -154,15 +154,12 @@ func main() {
 
 		for sock, _ := range hub.Clients {
 			data.Name = sock.Player.UUID
-			testUUID = sock.Player.UUID
 			msg, _ := json.Marshal(data)
 			sock.Send <- msg
 		}
 		time.Sleep(20 * time.Millisecond)
 	}
 }
-
-var testUUID = ""
 
 func collectWorldState(includeStaticAndAsleep bool) *shared_structs.WorldData {
 	data := shared_structs.WorldData{}
