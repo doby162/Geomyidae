@@ -27,7 +27,12 @@ var prevTime time.Time
 var players *player.List
 var simulationObjects []shared_structs.HasBehavior
 
-// abuse closures to allow remotely updating state without complicating this pointer situation
+// simulationObjects may not look like a slice of pointers, but it is
+// because HasBehavior is implemented with pointer receiver methods
+
+// simulationObjects is not stored as a pointer because I append to it locally
+// players is however, because it is updated remotely by the socket server
+// apOb allows players to add new NetworkPlayers to simulationObjects remotely
 func apOb(networkPlayer *player.NetworkPlayer) {
 	simulationObjects = append(simulationObjects, networkPlayer)
 }
@@ -182,6 +187,8 @@ func collectWorldState(includeStaticAndAsleep bool) *shared_structs.WorldData {
 	}
 	// it doesn't make logical sense to handle object removal in this function, but it does make it very easy to guarantee
 	// that we are for sure sending out at least one update in which the object is flagged as deleted
+	players.WriteAccess.Lock()
+	defer players.WriteAccess.Unlock()
 	for _, gameObj := range removed {
 		delete(players.Players, gameObj.UUID) // thank you whoever made this  null safe
 	}
@@ -189,6 +196,7 @@ func collectWorldState(includeStaticAndAsleep bool) *shared_structs.WorldData {
 	return &data
 }
 
+// todo move bullet and tile methods to their own packages like players have
 type bullet struct {
 	*shared_structs.GameObject
 	expirationDate time.Time
