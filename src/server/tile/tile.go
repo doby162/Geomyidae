@@ -10,10 +10,10 @@ func NewTile(gameObject *shared_structs.GameObject) *Tile {
 	return &Tile{gameObject}
 }
 
-func (t Tile) ApplyBehavior(deltaTime float64) {
+func (t *Tile) ApplyBehavior(deltaTime float64) {
 	return
 }
 
-func (t Tile) GetObject() *shared_structs.GameObject {
+func (t *Tile) GetObject() *shared_structs.GameObject {
 	return t.GameObject
 }

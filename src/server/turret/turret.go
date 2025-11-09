@@ -1,0 +1,37 @@
+package turret
+
+import (
+	"Geomyidae/internal/shared_structs"
+	"math"
+	"time"
+)
+
+type Turret struct {
+	*shared_structs.GameObject
+	target    *shared_structs.GameObject
+	shootTime time.Time
+}
+
+func (t *Turret) ApplyBehavior(deltaTime float64) {
+	tpos := t.target.Body.Position()
+	pos := t.Body.Position()
+	angle := math.Atan2(tpos.Y-pos.Y, tpos.X-pos.X)
+	// the fact that I have to add half a pi of radians makes me very suspicious that we are converting angles incorrectly
+	// probably in the client?
+	t.Body.SetAngle(angle + (math.Pi / 2))
+	if t.shootTime.UnixMilli() < time.Now().UnixMilli() {
+		t.GameObject.ShootFlag = true
+		t.shootTime = time.Now().Add(time.Second * 5)
+	}
+	if t.target.Delete {
+		t.Delete = true
+	}
+}
+
+func (t *Turret) GetObject() *shared_structs.GameObject {
+	return t.GameObject
+}
+
+func NewTurret(gameObject *shared_structs.GameObject, target *shared_structs.GameObject) *Turret {
+	return &Turret{gameObject, target, time.Now().Add(time.Second * 5)}
+}

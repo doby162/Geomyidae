@@ -5,6 +5,7 @@ import (
 	"Geomyidae/server/player"
 	"Geomyidae/server/sock_server"
 	"Geomyidae/server/tile"
+	"Geomyidae/server/turret"
 	"encoding/json"
 	"math"
 	"sort"
@@ -93,6 +94,7 @@ func main() {
 		includeStaticAndAsleep := false
 		players.WriteAccess.Lock()
 		deltaTime := time.Now().Sub(prevTime).Seconds()
+		countTurrets := 0
 
 		for _, obj := range simulationObjects {
 			obj.ApplyBehavior(deltaTime)
@@ -101,6 +103,10 @@ func main() {
 				log.Println("full packet")
 				includeStaticAndAsleep = true
 				gameObj.NeedsStatics = false
+			}
+			_, ok := obj.(*turret.Turret)
+			if ok {
+				countTurrets++
 			}
 			if gameObj.ShootFlag {
 				gameObj.ShootFlag = false
@@ -137,6 +143,36 @@ func main() {
 						Shape:         shape,
 					}))
 			}
+		}
+		var targetBod *shared_structs.GameObject
+		for _, pl := range players.Players {
+			targetBod = pl.GameObject
+		}
+
+		if countTurrets < len(players.Players) {
+			body := cp.NewBody(1, 1)
+			shape := cp.NewBox(body, 1, 1, 0)
+			shape.SetElasticity(0.25)
+			shape.SetDensity(0.5)
+			shape.SetFriction(1.0)
+			body.AddShape(shape)
+			body.SetPosition(cp.Vector{X: 5, Y: 5})
+			physics.AddBody(body)
+			physics.AddShape(shape)
+			simulationObjects = append(simulationObjects, turret.NewTurret(&shared_structs.GameObject{
+				Sprite:               "spaceShooterRedux",
+				SpriteOffsetX:        225,
+				SpriteOffsetY:        0,
+				SpriteWidth:          98,
+				SpriteHeight:         75,
+				SpriteFlipHorizontal: false,
+				SpriteFlipVertical:   true,
+				SpriteFlipDiagonal:   false,
+				Angle:                0,
+				UUID:                 uuid.New().String(),
+				Body:                 body,
+				Shape:                shape,
+			}, targetBod))
 		}
 
 		prevTime = time.Now()

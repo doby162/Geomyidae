@@ -17,11 +17,11 @@ func NewBullet(gameObject *shared_structs.GameObject) *Bullet {
 	}
 }
 
-func (b Bullet) GetObject() *shared_structs.GameObject {
+func (b *Bullet) GetObject() *shared_structs.GameObject {
 	return b.GameObject
 }
 
-func (b Bullet) ApplyBehavior(deltaTime float64) {
+func (b *Bullet) ApplyBehavior(deltaTime float64) {
 	if b.expirationDate.UnixMilli() < time.Now().UnixMilli() {
 		b.GameObject.Delete = true
 	}
