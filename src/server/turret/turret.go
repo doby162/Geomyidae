@@ -4,6 +4,8 @@ import (
 	"Geomyidae/internal/shared_structs"
 	"math"
 	"time"
+
+	"github.com/jakecoffman/cp/v2"
 )
 
 type Turret struct {
@@ -26,6 +28,13 @@ func (t *Turret) ApplyBehavior(deltaTime float64) {
 	if t.target.Delete {
 		t.Delete = true
 	}
+	t.Body.EachArbiter(func(arbiter *cp.Arbiter) {
+		_, bodB := arbiter.Bodies()
+		if bodB.UserData == "bullet" {
+			// we've been shot by something claiming to be a bullet!
+			t.Delete = true
+		}
+	})
 }
 
 func (t *Turret) GetObject() *shared_structs.GameObject {

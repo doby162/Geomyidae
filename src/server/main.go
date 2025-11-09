@@ -126,6 +126,7 @@ func main() {
 				y = y + math.Cos(angle)*(offset*-1)
 				body.SetVelocity(math.Sin(angle)*thrust, math.Cos(angle)*(-1*thrust))
 				body.SetPosition(cp.Vector{X: x, Y: y})
+				body.UserData = "bullet"
 
 				physics.AddBody(body)
 				physics.AddShape(shape)
