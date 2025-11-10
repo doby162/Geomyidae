@@ -90,6 +90,7 @@ func main() {
 	hub := sock_server.Api(players)
 
 	prevTime = time.Now()
+	turretSpawnTIme := time.Now()
 	for {
 		includeStaticAndAsleep := false
 		players.WriteAccess.Lock()
@@ -113,7 +114,7 @@ func main() {
 				body := cp.NewBody(1, 1)
 				shape := cp.NewCircle(body, 0.125, cp.Vector{X: 0, Y: 0})
 				shape.SetElasticity(0.25)
-				shape.SetDensity(0.5)
+				shape.SetDensity(50.5)
 				shape.SetFriction(1.0)
 				body.AddShape(shape)
 				pos := gameObj.Body.Position()
@@ -150,7 +151,8 @@ func main() {
 			targetBod = pl.GameObject
 		}
 
-		if countTurrets < len(players.Players) {
+		if countTurrets < len(players.Players) && time.Now().UnixMilli() > turretSpawnTIme.Add(1*time.Minute).UnixMilli() {
+			turretSpawnTIme = time.Now()
 			body := cp.NewBody(1, 1)
 			shape := cp.NewBox(body, 1, 1, 0)
 			shape.SetElasticity(0.25)
