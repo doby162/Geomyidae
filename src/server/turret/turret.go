@@ -1,6 +1,7 @@
 package turret
 
 import (
+	"Geomyidae/internal/constants"
 	"Geomyidae/internal/shared_structs"
 	"math"
 	"time"
@@ -30,7 +31,7 @@ func (t *Turret) ApplyBehavior(deltaTime float64) {
 	}
 	t.Body.EachArbiter(func(arbiter *cp.Arbiter) {
 		_, bodB := arbiter.Bodies()
-		if bodB.UserData == "bullet" {
+		if bodB.UserData == constants.Bullet {
 			// we've been shot by something claiming to be a bullet!
 			t.Delete = true
 		}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"Geomyidae/internal/constants"
 	"Geomyidae/server/bullet"
 	"Geomyidae/server/player"
 	"Geomyidae/server/sock_server"
@@ -63,7 +64,7 @@ func main() {
 		shape.SetFriction(1.0)
 		body.AddShape(shape)
 		body.SetPosition(cp.Vector{X: float64(td.Col) + 0.5, Y: float64(td.Row) + 0.5})
-		body.UserData = "tile"
+		body.UserData = constants.Tile
 
 		obj := tile.NewTile(
 			&shared_structs.GameObject{
@@ -128,7 +129,7 @@ func main() {
 				y = y + math.Cos(angle)*(offset*-1)
 				body.SetVelocity(math.Sin(angle)*thrust, math.Cos(angle)*(-1*thrust))
 				body.SetPosition(cp.Vector{X: x, Y: y})
-				body.UserData = "bullet"
+				body.UserData = constants.Bullet
 
 				physics.AddBody(body)
 				physics.AddShape(shape)
@@ -163,7 +164,7 @@ func main() {
 			body.SetPosition(cp.Vector{X: 5, Y: 5})
 			physics.AddBody(body)
 			physics.AddShape(shape)
-			body.UserData = "turret"
+			body.UserData = constants.Turret
 			simulationObjects = append(simulationObjects, turret.NewTurret(&shared_structs.GameObject{
 				Sprite:               "spaceShooterRedux",
 				SpriteOffsetX:        225,

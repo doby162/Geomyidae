@@ -1,6 +1,7 @@
 package bullet
 
 import (
+	"Geomyidae/internal/constants"
 	"Geomyidae/internal/shared_structs"
 	"time"
 
@@ -29,7 +30,7 @@ func (b *Bullet) ApplyBehavior(deltaTime float64) {
 	}
 	b.Body.EachArbiter(func(arbiter *cp.Arbiter) {
 		_, bodB := arbiter.Bodies()
-		if bodB.UserData == "player" || bodB.UserData == "turret" || bodB.UserData == "bullet" {
+		if bodB.UserData == constants.Player || bodB.UserData == constants.Turret || bodB.UserData == constants.Bullet {
 			b.Delete = true
 		}
 	})

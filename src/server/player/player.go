@@ -1,6 +1,7 @@
 package player
 
 import (
+	"Geomyidae/internal/constants"
 	"Geomyidae/internal/shared_structs"
 	"math"
 	"sync"
@@ -43,7 +44,7 @@ func (l *List) NewNetworkPlayer() *NetworkPlayer {
 	shape.SetFriction(1.0)
 	body.AddShape(shape)
 	body.SetPosition(cp.Vector{X: 5, Y: 5})
-	body.UserData = "player"
+	body.UserData = constants.Player
 
 	l.Physics.AddShape(shape)
 	l.Physics.AddBody(body)
