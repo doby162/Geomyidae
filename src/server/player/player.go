@@ -43,6 +43,7 @@ func (l *List) NewNetworkPlayer() *NetworkPlayer {
 	shape.SetFriction(1.0)
 	body.AddShape(shape)
 	body.SetPosition(cp.Vector{X: 5, Y: 5})
+	body.UserData = "player"
 
 	l.Physics.AddShape(shape)
 	l.Physics.AddBody(body)

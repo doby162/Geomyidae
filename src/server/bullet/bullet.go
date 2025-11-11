@@ -3,6 +3,8 @@ package bullet
 import (
 	"Geomyidae/internal/shared_structs"
 	"time"
+
+	"github.com/jakecoffman/cp/v2"
 )
 
 type Bullet struct {
@@ -25,4 +27,10 @@ func (b *Bullet) ApplyBehavior(deltaTime float64) {
 	if b.expirationDate.UnixMilli() < time.Now().UnixMilli() {
 		b.GameObject.Delete = true
 	}
+	b.Body.EachArbiter(func(arbiter *cp.Arbiter) {
+		_, bodB := arbiter.Bodies()
+		if bodB.UserData == "player" || bodB.UserData == "turret" || bodB.UserData == "bullet" {
+			b.Delete = true
+		}
+	})
 }
