@@ -194,6 +194,7 @@ func main() {
 		}
 
 		data := collectWorldState(includeStaticAndAsleep)
+		pruneWorldState()
 
 		for sock, _ := range hub.Clients {
 			data.Name = sock.Player.UUID
@@ -204,8 +205,7 @@ func main() {
 	}
 }
 
-func collectWorldState(includeStaticAndAsleep bool) *shared_structs.WorldData {
-	data := shared_structs.WorldData{}
+func pruneWorldState() {
 	var removed []*shared_structs.GameObject
 	removedIndexes := []int{}
 
@@ -217,6 +217,21 @@ func collectWorldState(includeStaticAndAsleep bool) *shared_structs.WorldData {
 			removed = append(removed, gameObj)
 			removedIndexes = append(removedIndexes, index)
 		}
+	}
+
+	players.WriteAccess.Lock()
+	defer players.WriteAccess.Unlock()
+	for _, gameObj := range removed {
+		delete(players.Players, gameObj.UUID)
+	}
+
+	simulationObjects = removeIndexes(simulationObjects, removedIndexes)
+}
+
+func collectWorldState(includeStaticAndAsleep bool) *shared_structs.WorldData {
+	data := shared_structs.WorldData{}
+	for _, obj := range simulationObjects {
+		gameObj := obj.GetObject()
 		if !includeStaticAndAsleep && gameObj.IsStatic {
 			continue
 		}
@@ -225,14 +240,6 @@ func collectWorldState(includeStaticAndAsleep bool) *shared_structs.WorldData {
 		}
 		data.Objects = append(data.Objects, *obj.GetObject())
 	}
-	// it doesn't make logical sense to handle object removal in this function, but it does make it very easy to guarantee
-	// that we are for sure sending out at least one update in which the object is flagged as deleted
-	players.WriteAccess.Lock()
-	defer players.WriteAccess.Unlock()
-	for _, gameObj := range removed {
-		delete(players.Players, gameObj.UUID) // thank you whoever made this  null safe
-	}
-	simulationObjects = removeIndexes(simulationObjects, removedIndexes)
 	return &data
 }
 
