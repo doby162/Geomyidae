@@ -137,10 +137,10 @@ if [[ "${REMOTE_HOST}" != "" ]]; then
   unison "${UNISON_ARGUMENTS[@]}"
 
   cd "${PROJECT_PATH}/src" || exit
-  scp.exe "${GAME_NAME}-server" "${USER}@${REMOTE_HOST}:/mnt/2000/container-mounts/caddy/${GAME_NAME}/"
+  scp.exe "${GAME_NAME}-server" "${USER}@${REMOTE_HOST}:/mnt/2000/container-mounts/caddy/${GAME_NAME}/${GAME_NAME}-server-NEW"
   rm "${GAME_NAME}-server"
 
   printf "\n${YELLOW}Restarting Server${NC}\n"
   # shellcheck disable=SC2029
-  ssh.exe "${USER}@${REMOTE_HOST}" "chmod +x /mnt/2000/container-mounts/caddy/${GAME_NAME}/${GAME_NAME}-server;cd /home/${USER}/containers/caddy;docker compose up --detach --build ${GAME_NAME}"
+  ssh.exe "${USER}@${REMOTE_HOST}" "chmod +x /mnt/2000/container-mounts/caddy/${GAME_NAME}/${GAME_NAME}-server-NEW;mv /mnt/2000/container-mounts/caddy/${GAME_NAME}/${GAME_NAME}-server-NEW /mnt/2000/container-mounts/caddy/${GAME_NAME}/${GAME_NAME}-server;cd /home/${USER}/containers/caddy;docker compose up --detach --build ${GAME_NAME}"
 fi
