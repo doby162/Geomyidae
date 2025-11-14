@@ -151,6 +151,8 @@ func main() {
 
 	// Connect to WebSocket server
 	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/ws"}
+	// For website in "production":
+	// u := url.URL{Scheme: "wss", Host: "geomyidae-server.ekpyroticfrood.net", Path: "/ws"}
 	slog.Debug("connecting to %s", u.String())
 
 	conn, err := DialWS(u.String())
