@@ -43,6 +43,8 @@ type UserConfig struct {
 	ConfigPath      string `json:"config_path"`
 	WindowPositionX int    `json:"window_position_x"`
 	WindowPositionY int    `json:"window_position_y"`
+	WindowSizeX     int    `json:"window_size_x"`
+	WindowSizeY     int    `json:"window_size_y"`
 }
 
 var userConfig UserConfig
@@ -54,7 +56,10 @@ func (g *Game) Update() error {
 	}
 
 	winX, winY := ebiten.WindowPosition()
-	if userConfig.ConfigPath != "" && (winX != userConfig.WindowPositionX || winY != userConfig.WindowPositionY) {
+	winSizeX, winSizeY := ebiten.WindowSize()
+	if userConfig.ConfigPath != "" && (winX != userConfig.WindowPositionX || winY != userConfig.WindowPositionY || winSizeX != userConfig.WindowSizeX || winSizeY != userConfig.WindowSizeY) {
+		userConfig.WindowSizeX = winSizeX
+		userConfig.WindowSizeY = winSizeY
 		userConfig.WindowPositionX = winX
 		userConfig.WindowPositionY = winY
 		configData, _ := json.MarshalIndent(userConfig, "", "  ")
@@ -241,7 +246,7 @@ func main() {
 				log.Fatal("Could not parse user config file:", err)
 			}
 		}
-		log.Println("User config file path:", userConfig.ConfigPath)
+		slog.Debug("User config file path:", userConfig.ConfigPath)
 	}
 
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
@@ -249,6 +254,9 @@ func main() {
 	ebiten.SetWindowTitle("Geomyidae")
 	if userConfig.WindowPositionX != 0 || userConfig.WindowPositionY != 0 {
 		ebiten.SetWindowPosition(userConfig.WindowPositionX, userConfig.WindowPositionY)
+	}
+	if userConfig.WindowSizeX != 0 && userConfig.WindowSizeY != 0 {
+		ebiten.SetWindowSize(userConfig.WindowSizeX, userConfig.WindowSizeY)
 	}
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)
