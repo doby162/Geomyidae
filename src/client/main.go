@@ -23,6 +23,9 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+
+	graphics "github.com/quasilyte/ebitengine-graphics"
+	"github.com/quasilyte/gmath"
 )
 
 const (
@@ -32,7 +35,11 @@ const (
 
 var sprites map[string]*ebiten.Image
 
-type Game struct{}
+type Game struct {
+	pos         gmath.Vec
+	initialized bool
+	objects     []drawable
+}
 
 var worldMap map[string]*shared_structs.GameObject
 var mu sync.Mutex
@@ -54,6 +61,14 @@ func (g *Game) Update() error {
 	if len(worldMap) == 0 {
 		return nil
 	}
+
+	if !g.initialized {
+		g.Init()
+		g.initialized = true
+	}
+
+	// g.pos = g.pos.Add(gmath.Vec{X: 1, Y: 2})
+	g.pos = gmath.Vec{X: screenWidth / 2, Y: screenHeight / 2} // Example of setting position directly
 
 	winX, winY := ebiten.WindowPosition()
 	winSizeX, winSizeY := ebiten.WindowSize()
@@ -116,6 +131,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		screen.DrawImage(sprites[object.Sprite].SubImage(image.Rect(object.SpriteOffsetX, object.SpriteOffsetY, object.SpriteOffsetX+object.SpriteWidth, object.SpriteOffsetY+object.SpriteHeight)).(*ebiten.Image), op)
 	}
 
+	for _, o := range g.objects {
+		o.Draw(screen)
+	}
+
 	ebitenutil.DebugPrint(screen, "Camera position: "+fmt.Sprintf("%.2f, %.2f, goroutines:%v", cameraX, cameraY, runtime.NumGoroutine()))
 }
 
@@ -157,7 +176,7 @@ func main() {
 	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/ws"}
 	// For website in "production":
 	// u := url.URL{Scheme: "wss", Host: "geomyidae-server.ekpyroticfrood.net", Path: "/ws"}
-	slog.Debug("connecting to %s", u.String())
+	slog.Debug("connecting", slog.String("url", u.String()))
 
 	conn, err := DialWS(u.String())
 	if err != nil {
@@ -185,7 +204,7 @@ func main() {
 			var newState shared_structs.WorldData
 			err = json.Unmarshal(message, &newState)
 			if err != nil {
-				slog.Error("unmarshal:", err)
+				slog.Error("unmarshal", err)
 			}
 			mu.Lock()
 			for _, object := range newState.Objects {
@@ -259,5 +278,30 @@ func main() {
 	}
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)
+	}
+
+}
+
+type drawable interface {
+	Draw(screen *ebiten.Image)
+}
+
+func (g *Game) Init() {
+	// {
+	// 	from := gmath.Pos{Base: &g.pos}
+	// 	to := gmath.Pos{Offset: gmath.Vec{X: 128, Y: 64}}
+	// 	l := graphics.NewLine(from, to)
+	// 	l.SetWidth(2)
+	// 	l.SetColorScale(graphics.ColorScaleFromRGBA(200, 100, 100, 255))
+	// 	g.objects = append(g.objects, l)
+	// }
+
+	{
+		r := graphics.NewRect(32, 32)
+		r.Pos.Base = &g.pos
+		r.SetFillColorScale(graphics.RGB(0xAABB00))
+		r.SetOutlineColorScale(graphics.RGB(0x0055ff))
+		r.SetOutlineWidth(2)
+		g.objects = append(g.objects, r)
 	}
 }
