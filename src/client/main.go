@@ -112,8 +112,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			op.GeoM.Rotate(math.Pi / 2)
 		}
 		op.GeoM.Rotate(object.Angle)
-		op.GeoM.Translate(-cameraX, -cameraY)
-		op.GeoM.Translate(object.X-float64(object.SpriteWidth/2), object.Y-float64(object.SpriteHeight/2))
+		op.GeoM.Translate(object.X-cameraX, object.Y-cameraY)
 		screen.DrawImage(sprites[object.Sprite].SubImage(image.Rect(object.SpriteOffsetX, object.SpriteOffsetY, object.SpriteOffsetX+object.SpriteWidth, object.SpriteOffsetY+object.SpriteHeight)).(*ebiten.Image), op)
 	}
 
