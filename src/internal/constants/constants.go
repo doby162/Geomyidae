@@ -8,4 +8,5 @@ const (
 	Bullet  UserDataCode = "bullet"
 	Tile    UserDataCode = "tile"
 	Tracker UserDataCode = "tracker"
+	Bomb    UserDataCode = "bomb"
 )

@@ -2,6 +2,7 @@ package main
 
 import (
 	"Geomyidae/internal/constants"
+	"Geomyidae/server/bomb"
 	"Geomyidae/server/bullet"
 	"Geomyidae/server/player"
 	"Geomyidae/server/sock_server"
@@ -111,6 +112,14 @@ func main() {
 			_, ok := obj.(*turret.Turret)
 			if ok {
 				countTurrets++
+			}
+			if gameObj.BombDrop {
+				gameObj.BombDrop = false
+				newBomb := bomb.NewBomb(gameObj.X, gameObj.Y)
+				physics.AddBody(newBomb.Body)
+				physics.AddShape(newBomb.Shape)
+				simulationObjects = append(
+					simulationObjects, newBomb)
 			}
 			if gameObj.ShootFlag {
 				gameObj.ShootFlag = false

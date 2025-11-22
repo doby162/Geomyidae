@@ -28,6 +28,7 @@ type NetworkPlayer struct {
 	canJump   bool
 	HeldKeys  []string
 	shootTime float64
+	bombCount int
 }
 
 // NewNetworkPlayer creates a network player and stores a pointer to it in both the master list and the network player list
@@ -64,6 +65,7 @@ func (l *List) NewNetworkPlayer() *NetworkPlayer {
 	l.apOb(point)
 	l.Players[name] = point
 
+	player.bombCount = 1
 	return &player
 }
 
@@ -73,9 +75,6 @@ const maxSpeed = 25.0
 const turn = 2
 
 func (p *NetworkPlayer) ApplyBehavior(deltaTime float64) {
-	//p.Body.EachArbiter(func(arbiter *cp.Arbiter) {
-	//bodA, bodB := arbiter.Bodies()
-	//})
 	tr := thrust * deltaTime
 	tn := turn * deltaTime
 	x, y := p.Body.Velocity().X, p.Body.Velocity().Y
@@ -86,6 +85,10 @@ func (p *NetworkPlayer) ApplyBehavior(deltaTime float64) {
 		p.shootTime -= deltaTime
 	}
 	for _, key := range p.HeldKeys {
+		if key == "B" && p.bombCount > 0 {
+			p.bombCount--
+			p.BombDrop = true
+		}
 		if key == "W" {
 			p.Body.ApplyImpulseAtLocalPoint(cp.Vector{
 				X: -math.Sin(tr),

@@ -21,6 +21,7 @@ type GameObject struct {
 	ShootFlag            bool      `json:"-"`
 	NeedsStatics         bool      `json:"-"`
 	IsStatic             bool      `json:"-"`
+	BombDrop             bool      `json:"-"`
 }
 
 type HasBehavior interface {
