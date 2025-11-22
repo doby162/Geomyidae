@@ -3,6 +3,7 @@ package turret
 import (
 	"Geomyidae/internal/constants"
 	"Geomyidae/internal/shared_structs"
+	"Geomyidae/server/bullet"
 	"Geomyidae/server/pickup"
 	"math"
 	"time"
@@ -24,7 +25,11 @@ func (t *Turret) ApplyBehavior(deltaTime float64, spawnerPipeline chan shared_st
 	// probably in the client?
 	t.Body.SetAngle(angle + (math.Pi / 2))
 	if t.shootTime.UnixMilli() < time.Now().UnixMilli() {
-		t.GameObject.ShootFlag = true
+		newBullet := bullet.NewBullet(t.GetObject())
+		select {
+		case spawnerPipeline <- newBullet:
+		default:
+		}
 		t.shootTime = time.Now().Add(time.Second * 5)
 	}
 	if t.target.Delete {
@@ -40,7 +45,6 @@ func (t *Turret) ApplyBehavior(deltaTime float64, spawnerPipeline chan shared_st
 				case spawnerPipeline <- newPickup:
 				default:
 				}
-				
 				t.Delete = true
 			}
 		}

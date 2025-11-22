@@ -3,6 +3,8 @@ package player
 import (
 	"Geomyidae/internal/constants"
 	"Geomyidae/internal/shared_structs"
+	"Geomyidae/server/bomb"
+	"Geomyidae/server/bullet"
 	"math"
 	"sync"
 
@@ -102,7 +104,11 @@ func (p *NetworkPlayer) ApplyBehavior(deltaTime float64, spawnerPipeline chan sh
 	for _, key := range p.HeldKeys {
 		if key == "B" && p.bombCount > 0 && p.bombTime <= 0 {
 			p.bombCount--
-			p.BombDrop = true
+			newBomb := bomb.NewBomb(p.X, p.Y)
+			select {
+			case spawnerPipeline <- newBomb:
+			default:
+			}
 			p.bombTime = 0.5
 		}
 		if key == "W" {
@@ -127,7 +133,11 @@ func (p *NetworkPlayer) ApplyBehavior(deltaTime float64, spawnerPipeline chan sh
 		}
 		if key == "E" && p.shootTime <= 0 {
 			p.shootTime = 0.5 // seconds
-			p.ShootFlag = true
+			newBullet := bullet.NewBullet(p.GetObject())
+			select {
+			case spawnerPipeline <- newBullet:
+			default:
+			}
 		}
 	}
 

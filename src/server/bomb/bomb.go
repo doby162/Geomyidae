@@ -3,6 +3,7 @@ package bomb
 import (
 	"Geomyidae/internal/constants"
 	"Geomyidae/internal/shared_structs"
+	"Geomyidae/server/bullet"
 	"math"
 	"time"
 
@@ -61,7 +62,11 @@ func (b *Bomb) ApplyBehavior(deltaTime float64, spawnerPipeline chan shared_stru
 	} else if b.det {
 		degree := (math.Pi * 2) / b.detMax
 		b.Body.SetAngle(degree * b.detCount)
-		b.ShootFlag = true
+		newBullet := bullet.NewBullet(b.GetObject())
+		select {
+		case spawnerPipeline <- newBullet:
+		default:
+		}
 		b.detCount++
 	}
 	b.Body.EachArbiter(func(arbiter *cp.Arbiter) {

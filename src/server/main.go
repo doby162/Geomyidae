@@ -2,8 +2,6 @@ package main
 
 import (
 	"Geomyidae/internal/constants"
-	"Geomyidae/server/bomb"
-	"Geomyidae/server/bullet"
 	"Geomyidae/server/pickup"
 	"Geomyidae/server/player"
 	"Geomyidae/server/sock_server"
@@ -11,7 +9,6 @@ import (
 	"Geomyidae/server/tracker"
 	"Geomyidae/server/turret"
 	"encoding/json"
-	"math"
 	"sort"
 	"time"
 
@@ -121,51 +118,6 @@ func main() {
 			_, ok := obj.(*turret.Turret)
 			if ok {
 				countTurrets++
-			}
-			if gameObj.BombDrop {
-				gameObj.BombDrop = false
-				newBomb := bomb.NewBomb(gameObj.X, gameObj.Y)
-				physics.AddBody(newBomb.Body)
-				physics.AddShape(newBomb.Shape)
-				simulationObjects = append(
-					simulationObjects, newBomb)
-			}
-			if gameObj.ShootFlag {
-				gameObj.ShootFlag = false
-				body := cp.NewBody(1, 1)
-				shape := cp.NewCircle(body, 0.125, cp.Vector{X: 0, Y: 0})
-				shape.SetElasticity(0.25)
-				shape.SetDensity(50.5)
-				shape.SetFriction(1.0)
-				body.AddShape(shape)
-				pos := gameObj.Body.Position()
-				x := pos.X
-				y := pos.Y
-				angle := gameObj.Body.Angle()
-				thrust := 35.0
-				offset := 1.0
-				x = x + math.Sin(angle)*offset
-				y = y + math.Cos(angle)*(offset*-1)
-				body.SetVelocity(math.Sin(angle)*thrust, math.Cos(angle)*(-1*thrust))
-				body.SetPosition(cp.Vector{X: x, Y: y})
-
-				physics.AddBody(body)
-				physics.AddShape(shape)
-				newBullet := bullet.NewBullet(&shared_structs.GameObject{
-					Sprite:        "spaceShooterRedux",
-					SpriteOffsetX: 0,
-					SpriteOffsetY: 0,
-					SpriteWidth:   16,
-					SpriteHeight:  16,
-					Angle:         body.Angle(),
-					UUID:          uuid.New().String(),
-					Body:          body,
-					Shape:         shape,
-					Identity:      constants.Bullet,
-				})
-
-				simulationObjects = append(simulationObjects, newBullet)
-				body.UserData = newBullet.GameObject
 			}
 		}
 

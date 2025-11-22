@@ -22,10 +22,8 @@ type GameObject struct {
 	Body                 *cp.Body               `json:"-"`
 	Shape                *cp.Shape              `json:"-"`
 	Delete               bool                   `json:"del"`
-	ShootFlag            bool                   `json:"-"`
 	NeedsStatics         bool                   `json:"-"`
 	IsStatic             bool                   `json:"-"`
-	BombDrop             bool                   `json:"-"`
 	Identity             constants.UserDataCode `json:"-"`
 	Inbox                chan string            `json:"-"`
 }
