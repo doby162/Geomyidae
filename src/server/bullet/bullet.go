@@ -24,7 +24,7 @@ func (b *Bullet) GetObject() *shared_structs.GameObject {
 	return b.GameObject
 }
 
-func (b *Bullet) ApplyBehavior(deltaTime float64) {
+func (b *Bullet) ApplyBehavior(deltaTime float64, spawnerPipeline chan shared_structs.HasBehavior) {
 	if b.expirationDate.UnixMilli() < time.Now().UnixMilli() {
 		b.GameObject.Delete = true
 	}

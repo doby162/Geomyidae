@@ -31,7 +31,7 @@ type GameObject struct {
 }
 
 type HasBehavior interface {
-	ApplyBehavior(deltaTime float64)
+	ApplyBehavior(deltaTime float64, spawnerPipeline chan HasBehavior)
 	GetObject() *GameObject
 }
 

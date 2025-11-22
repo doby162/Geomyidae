@@ -3,6 +3,7 @@ package turret
 import (
 	"Geomyidae/internal/constants"
 	"Geomyidae/internal/shared_structs"
+	"Geomyidae/server/pickup"
 	"math"
 	"time"
 
@@ -15,7 +16,7 @@ type Turret struct {
 	shootTime time.Time
 }
 
-func (t *Turret) ApplyBehavior(deltaTime float64) {
+func (t *Turret) ApplyBehavior(deltaTime float64, spawnerPipeline chan shared_structs.HasBehavior) {
 	tpos := t.target.Body.Position()
 	pos := t.Body.Position()
 	angle := math.Atan2(tpos.Y-pos.Y, tpos.X-pos.X)
@@ -33,6 +34,13 @@ func (t *Turret) ApplyBehavior(deltaTime float64) {
 		_, bodB := arbiter.Bodies()
 		if ptr, ok := bodB.UserData.(*shared_structs.GameObject); ok {
 			if ptr.Identity == constants.Bullet {
+
+				newPickup := pickup.NewPickup(pos.X, pos.Y, "bombplus")
+				select {
+				case spawnerPipeline <- newPickup:
+				default:
+				}
+				
 				t.Delete = true
 			}
 		}

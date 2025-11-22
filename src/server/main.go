@@ -56,6 +56,8 @@ func main() {
 	physics = cp.NewSpace()
 	players = player.NewList(physics, apOb)
 
+	spawnerPipeline := make(chan shared_structs.HasBehavior, 10)
+
 	for _, td := range tileData {
 		if td.ID == 0 {
 			continue // empty tile
@@ -109,7 +111,7 @@ func main() {
 		countTurrets := 0
 
 		for _, obj := range simulationObjects {
-			obj.ApplyBehavior(deltaTime)
+			obj.ApplyBehavior(deltaTime, spawnerPipeline)
 			gameObj := obj.GetObject()
 			if gameObj.NeedsStatics {
 				log.Println("full packet")
@@ -166,6 +168,18 @@ func main() {
 				body.UserData = newBullet.GameObject
 			}
 		}
+
+		select {
+		case msg, ok := <-spawnerPipeline:
+			if ok {
+				obj := msg.GetObject()
+				physics.AddBody(obj.Body)
+				physics.AddShape(obj.Shape)
+				simulationObjects = append(simulationObjects, msg)
+			}
+		default:
+		}
+
 		var targetBod *shared_structs.GameObject
 		for _, pl := range players.Players {
 			targetBod = pl.GameObject

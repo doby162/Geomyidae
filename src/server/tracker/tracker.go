@@ -20,7 +20,7 @@ func NewTracker(gameObject, target *shared_structs.GameObject) *Tracker {
 // even infinitesimal thrust gets fast quick
 const thrust = 0.0001
 
-func (t *Tracker) ApplyBehavior(deltaTime float64) {
+func (t *Tracker) ApplyBehavior(deltaTime float64, spawnerPipeline chan shared_structs.HasBehavior) {
 	tr := thrust * deltaTime
 	tpos := t.target.Body.Position()
 	pos := t.Body.Position()

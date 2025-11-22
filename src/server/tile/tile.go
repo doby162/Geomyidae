@@ -10,7 +10,7 @@ func NewTile(gameObject *shared_structs.GameObject) *Tile {
 	return &Tile{gameObject}
 }
 
-func (t *Tile) ApplyBehavior(deltaTime float64) {
+func (t *Tile) ApplyBehavior(deltaTime float64, spawnerPipeline chan shared_structs.HasBehavior) {
 	return
 }
 

@@ -13,7 +13,7 @@ type Pickup struct {
 	pickupType string
 }
 
-func (p *Pickup) ApplyBehavior(deltaTime float64) {
+func (p *Pickup) ApplyBehavior(deltaTime float64, spawnerPipeline chan shared_structs.HasBehavior) {
 	p.Body.EachArbiter(func(arbiter *cp.Arbiter) {
 		_, bodB := arbiter.Bodies()
 		if ptr, ok := bodB.UserData.(*shared_structs.GameObject); ok {
@@ -43,8 +43,8 @@ func NewPickup(x float64, y float64, str string) *Pickup {
 		X:             x,
 		Y:             y,
 		Sprite:        "spaceShooterRedux",
-		SpriteOffsetX: 0,
-		SpriteOffsetY: 0,
+		SpriteOffsetX: 320,
+		SpriteOffsetY: 310,
 		SpriteWidth:   16,
 		SpriteHeight:  16,
 		UUID:          uuid.New().String(),

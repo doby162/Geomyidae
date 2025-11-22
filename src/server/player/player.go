@@ -77,7 +77,7 @@ const thrust = 2
 const maxSpeed = 25.0
 const turn = 2
 
-func (p *NetworkPlayer) ApplyBehavior(deltaTime float64) {
+func (p *NetworkPlayer) ApplyBehavior(deltaTime float64, spawnerPipeline chan shared_structs.HasBehavior) {
 	tr := thrust * deltaTime
 	tn := turn * deltaTime
 	x, y := p.Body.Velocity().X, p.Body.Velocity().Y

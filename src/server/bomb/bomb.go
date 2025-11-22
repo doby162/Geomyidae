@@ -30,7 +30,7 @@ func NewBomb(x, y float64) *Bomb {
 		X:             x,
 		Y:             y,
 		Sprite:        "spaceShooterRedux",
-		SpriteOffsetX: 0,
+		SpriteOffsetX: 20,
 		SpriteOffsetY: 0,
 		SpriteWidth:   16,
 		SpriteHeight:  16,
@@ -50,7 +50,7 @@ func NewBomb(x, y float64) *Bomb {
 		det:            false,
 	}
 }
-func (b *Bomb) ApplyBehavior(deltaTime float64) {
+func (b *Bomb) ApplyBehavior(deltaTime float64, spawnerPipeline chan shared_structs.HasBehavior) {
 	if !b.det {
 		if b.expirationDate.UnixMilli() < time.Now().UnixMilli() {
 			b.det = true
