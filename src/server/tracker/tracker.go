@@ -35,11 +35,10 @@ func (t *Tracker) ApplyBehavior(deltaTime float64) {
 	}
 	t.Body.EachArbiter(func(arbiter *cp.Arbiter) {
 		_, bodB := arbiter.Bodies()
-		if bodB.UserData == constants.Bullet {
-			t.Delete = true
-		}
-		if bodB.UserData == constants.Player {
-			t.Delete = true
+		if ptr, ok := bodB.UserData.(*shared_structs.GameObject); ok {
+			if ptr.Identity == constants.Player || ptr.Identity == constants.Bullet {
+				t.Delete = true
+			}
 		}
 	})
 }

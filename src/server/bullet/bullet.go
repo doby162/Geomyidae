@@ -30,8 +30,10 @@ func (b *Bullet) ApplyBehavior(deltaTime float64) {
 	}
 	b.Body.EachArbiter(func(arbiter *cp.Arbiter) {
 		_, bodB := arbiter.Bodies()
-		if bodB.UserData == constants.Player || bodB.UserData == constants.Turret || bodB.UserData == constants.Bullet {
-			b.Delete = true
+		if ptr, ok := bodB.UserData.(*shared_structs.GameObject); ok {
+			if ptr.Identity == constants.Player || ptr.Identity == constants.Turret || ptr.Identity == constants.Bullet {
+				b.Delete = true
+			}
 		}
 	})
 }

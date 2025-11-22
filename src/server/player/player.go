@@ -29,6 +29,7 @@ type NetworkPlayer struct {
 	HeldKeys  []string
 	shootTime float64
 	bombCount int
+	bombTime  float64
 }
 
 // NewNetworkPlayer creates a network player and stores a pointer to it in both the master list and the network player list
@@ -45,7 +46,6 @@ func (l *List) NewNetworkPlayer() *NetworkPlayer {
 	shape.SetFriction(1.0)
 	body.AddShape(shape)
 	body.SetPosition(cp.Vector{X: 5, Y: 5})
-	body.UserData = constants.Player
 
 	l.Physics.AddShape(shape)
 	l.Physics.AddBody(body)
@@ -60,7 +60,10 @@ func (l *List) NewNetworkPlayer() *NetworkPlayer {
 		SpriteWidth:   98,
 		SpriteHeight:  75,
 		NeedsStatics:  true,
+		Identity:      constants.Player,
+		Inbox:         make(chan string, 10), // if the inbox fills up it will block so the sender is responsible for not sending data once it is full
 	}, HeldKeys: []string{}, canJump: true}
+	body.UserData = player.GameObject
 	point := &player
 	l.apOb(point)
 	l.Players[name] = point
@@ -84,10 +87,23 @@ func (p *NetworkPlayer) ApplyBehavior(deltaTime float64) {
 	if p.shootTime >= 0 {
 		p.shootTime -= deltaTime
 	}
+	if p.bombTime >= 0 {
+		p.bombTime -= deltaTime
+	}
+	select {
+	case msg, ok := <-p.Inbox:
+		if ok {
+			if msg == "bombplus" {
+				p.bombCount++
+			}
+		}
+	default:
+	}
 	for _, key := range p.HeldKeys {
-		if key == "B" && p.bombCount > 0 {
+		if key == "B" && p.bombCount > 0 && p.bombTime <= 0 {
 			p.bombCount--
 			p.BombDrop = true
+			p.bombTime = 0.5
 		}
 		if key == "W" {
 			p.Body.ApplyImpulseAtLocalPoint(cp.Vector{

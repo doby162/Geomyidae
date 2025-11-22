@@ -26,7 +26,6 @@ func NewBomb(x, y float64) *Bomb {
 	shape.SetFriction(1.0)
 	body.AddShape(shape)
 	body.SetPosition(cp.Vector{X: x / 64, Y: y / 64})
-	body.UserData = constants.Bomb
 	gameObject := shared_structs.GameObject{
 		X:             x,
 		Y:             y,
@@ -39,7 +38,9 @@ func NewBomb(x, y float64) *Bomb {
 		Body:          body,
 		Shape:         shape,
 		IsStatic:      false,
+		Identity:      constants.Bomb,
 	}
+	body.UserData = &gameObject
 
 	return &Bomb{
 		GameObject:     &gameObject,
@@ -65,8 +66,10 @@ func (b *Bomb) ApplyBehavior(deltaTime float64) {
 	}
 	b.Body.EachArbiter(func(arbiter *cp.Arbiter) {
 		_, bodB := arbiter.Bodies()
-		if bodB.UserData == constants.Bullet {
-			b.Delete = true
+		if ptr, ok := bodB.UserData.(*shared_structs.GameObject); ok {
+			if ptr.Identity == constants.Bullet {
+				b.Delete = true
+			}
 		}
 	})
 }

@@ -4,6 +4,7 @@ import (
 	"Geomyidae/internal/constants"
 	"Geomyidae/server/bomb"
 	"Geomyidae/server/bullet"
+	"Geomyidae/server/pickup"
 	"Geomyidae/server/player"
 	"Geomyidae/server/sock_server"
 	"Geomyidae/server/tile"
@@ -66,7 +67,6 @@ func main() {
 		shape.SetFriction(1.0)
 		body.AddShape(shape)
 		body.SetPosition(cp.Vector{X: float64(td.Col) + 0.5, Y: float64(td.Row) + 0.5})
-		body.UserData = constants.Tile
 
 		obj := tile.NewTile(
 			&shared_structs.GameObject{
@@ -83,12 +83,19 @@ func main() {
 				Body:                 body,
 				Shape:                shape,
 				IsStatic:             true,
+				Identity:             constants.Tile,
 			})
+		body.UserData = obj.GameObject
 
 		physics.AddShape(shape)
 		simulationObjects = append(simulationObjects, obj)
 		physics.AddBody(body)
 	}
+
+	newPickup := pickup.NewPickup(7, 7, "bombplus")
+	physics.AddShape(newPickup.Shape)
+	physics.AddBody(newPickup.Body)
+	simulationObjects = append(simulationObjects, newPickup)
 
 	// kick off socket server
 	hub := sock_server.Api(players)
@@ -139,23 +146,24 @@ func main() {
 				y = y + math.Cos(angle)*(offset*-1)
 				body.SetVelocity(math.Sin(angle)*thrust, math.Cos(angle)*(-1*thrust))
 				body.SetPosition(cp.Vector{X: x, Y: y})
-				body.UserData = constants.Bullet
 
 				physics.AddBody(body)
 				physics.AddShape(shape)
+				newBullet := bullet.NewBullet(&shared_structs.GameObject{
+					Sprite:        "spaceShooterRedux",
+					SpriteOffsetX: 0,
+					SpriteOffsetY: 0,
+					SpriteWidth:   16,
+					SpriteHeight:  16,
+					Angle:         body.Angle(),
+					UUID:          uuid.New().String(),
+					Body:          body,
+					Shape:         shape,
+					Identity:      constants.Bullet,
+				})
 
-				simulationObjects = append(simulationObjects,
-					bullet.NewBullet(&shared_structs.GameObject{
-						Sprite:        "spaceShooterRedux",
-						SpriteOffsetX: 0,
-						SpriteOffsetY: 0,
-						SpriteWidth:   16,
-						SpriteHeight:  16,
-						Angle:         body.Angle(),
-						UUID:          uuid.New().String(),
-						Body:          body,
-						Shape:         shape,
-					}))
+				simulationObjects = append(simulationObjects, newBullet)
+				body.UserData = newBullet.GameObject
 			}
 		}
 		var targetBod *shared_structs.GameObject
@@ -174,8 +182,7 @@ func main() {
 			body.SetPosition(cp.Vector{X: 5, Y: 5})
 			physics.AddBody(body)
 			physics.AddShape(shape)
-			body.UserData = constants.Turret
-			simulationObjects = append(simulationObjects, turret.NewTurret(&shared_structs.GameObject{
+			newTurret := turret.NewTurret(&shared_structs.GameObject{
 				Sprite:               "spaceShooterRedux",
 				SpriteOffsetX:        225,
 				SpriteOffsetY:        0,
@@ -188,7 +195,10 @@ func main() {
 				UUID:                 uuid.New().String(),
 				Body:                 body,
 				Shape:                shape,
-			}, targetBod))
+				Identity:             constants.Turret,
+			}, targetBod)
+			simulationObjects = append(simulationObjects, newTurret)
+			body.UserData = newTurret.GameObject
 
 			body = cp.NewBody(1, 1)
 			shape = cp.NewBox(body, 1, 1, 0)
@@ -199,8 +209,7 @@ func main() {
 			body.SetPosition(cp.Vector{X: 5, Y: 5})
 			physics.AddBody(body)
 			physics.AddShape(shape)
-			body.UserData = constants.Tracker
-			simulationObjects = append(simulationObjects, tracker.NewTracker(&shared_structs.GameObject{
+			newTracker := tracker.NewTracker(&shared_structs.GameObject{
 				Sprite:               "spaceShooterRedux",
 				SpriteOffsetX:        450,
 				SpriteOffsetY:        0,
@@ -213,7 +222,10 @@ func main() {
 				UUID:                 uuid.New().String(),
 				Body:                 body,
 				Shape:                shape,
-			}, targetBod))
+				Identity:             constants.Tracker,
+			}, targetBod)
+			simulationObjects = append(simulationObjects, newTracker)
+			body.UserData = newTracker.GameObject
 		}
 
 		prevTime = time.Now()

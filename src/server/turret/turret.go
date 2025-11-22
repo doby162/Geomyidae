@@ -31,9 +31,10 @@ func (t *Turret) ApplyBehavior(deltaTime float64) {
 	}
 	t.Body.EachArbiter(func(arbiter *cp.Arbiter) {
 		_, bodB := arbiter.Bodies()
-		if bodB.UserData == constants.Bullet {
-			// we've been shot by something claiming to be a bullet!
-			t.Delete = true
+		if ptr, ok := bodB.UserData.(*shared_structs.GameObject); ok {
+			if ptr.Identity == constants.Bullet {
+				t.Delete = true
+			}
 		}
 	})
 }
