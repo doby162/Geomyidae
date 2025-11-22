@@ -42,6 +42,6 @@ func (t *Turret) GetObject() *shared_structs.GameObject {
 	return t.GameObject
 }
 
-func NewTurret(gameObject *shared_structs.GameObject, target *shared_structs.GameObject) *Turret {
+func NewTurret(gameObject, target *shared_structs.GameObject) *Turret {
 	return &Turret{gameObject, target, time.Now().Add(time.Second * 5)}
 }

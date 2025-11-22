@@ -6,6 +6,7 @@ import (
 	"Geomyidae/server/player"
 	"Geomyidae/server/sock_server"
 	"Geomyidae/server/tile"
+	"Geomyidae/server/tracker"
 	"Geomyidae/server/turret"
 	"encoding/json"
 	"math"
@@ -153,7 +154,7 @@ func main() {
 			targetBod = pl.GameObject
 		}
 
-		if countTurrets < len(players.Players) && time.Now().UnixMilli() > turretSpawnTIme.Add(1*time.Minute).UnixMilli() {
+		if countTurrets < len(players.Players) && time.Now().UnixMilli() > turretSpawnTIme.Add(1*time.Second).UnixMilli() {
 			turretSpawnTIme = time.Now()
 			body := cp.NewBody(1, 1)
 			shape := cp.NewBox(body, 1, 1, 0)
@@ -168,6 +169,31 @@ func main() {
 			simulationObjects = append(simulationObjects, turret.NewTurret(&shared_structs.GameObject{
 				Sprite:               "spaceShooterRedux",
 				SpriteOffsetX:        225,
+				SpriteOffsetY:        0,
+				SpriteWidth:          98,
+				SpriteHeight:         75,
+				SpriteFlipHorizontal: false,
+				SpriteFlipVertical:   true,
+				SpriteFlipDiagonal:   false,
+				Angle:                0,
+				UUID:                 uuid.New().String(),
+				Body:                 body,
+				Shape:                shape,
+			}, targetBod))
+
+			body = cp.NewBody(1, 1)
+			shape = cp.NewBox(body, 1, 1, 0)
+			shape.SetElasticity(0.25)
+			shape.SetDensity(0.5)
+			shape.SetFriction(1.0)
+			body.AddShape(shape)
+			body.SetPosition(cp.Vector{X: 5, Y: 5})
+			physics.AddBody(body)
+			physics.AddShape(shape)
+			body.UserData = constants.Tracker
+			simulationObjects = append(simulationObjects, tracker.NewTracker(&shared_structs.GameObject{
+				Sprite:               "spaceShooterRedux",
+				SpriteOffsetX:        450,
 				SpriteOffsetY:        0,
 				SpriteWidth:          98,
 				SpriteHeight:         75,
