@@ -6,7 +6,6 @@ import (
 	"Geomyidae/server/player"
 	"Geomyidae/server/sock_server"
 	"Geomyidae/server/tile"
-	"Geomyidae/server/tracker"
 	"Geomyidae/server/turret"
 	"encoding/json"
 	"sort"
@@ -17,7 +16,7 @@ import (
 
 	assets "Geomyidae"
 	"Geomyidae/internal/shared_structs"
-	tiled "Geomyidae/internal/tiled"
+	"Geomyidae/internal/tiled"
 	"log"
 )
 
@@ -83,13 +82,74 @@ func main() {
 				Shape:                shape,
 				IsStatic:             true,
 				Identity:             constants.Tile,
-			})
+			}, nil)
 		body.UserData = obj.GameObject
 
 		physics.AddShape(shape)
 		simulationObjects = append(simulationObjects, obj)
 		physics.AddBody(body)
 	}
+
+	// make an action block to trigger a spawn sequence
+	col, row := 7, 7
+	body := cp.NewStaticBody()
+	shape := cp.NewBox(body, 1, 1, 0)
+	shape.SetElasticity(0.25)
+	shape.SetDensity(0.5)
+	shape.SetFriction(1.0)
+	body.AddShape(shape)
+	body.SetPosition(cp.Vector{X: float64(col) + 0.5, Y: float64(row) + 0.5})
+
+	seq := make([]tile.Action, 6)
+	seq[0] = tile.Action{
+		Seconds: 1,
+		Type:    constants.Turret,
+		X:       8,
+		Y:       8,
+	}
+	seq[1] = tile.Action{
+		Seconds: 2,
+		Type:    constants.Turret,
+		X:       3,
+		Y:       3,
+	}
+	seq[2] = tile.Action{
+		Seconds: 2,
+		Type:    constants.Turret,
+		X:       2,
+		Y:       8,
+	}
+	seq[3] = tile.Action{
+		Seconds: 2,
+		Type:    constants.Turret,
+		X:       1,
+		Y:       3,
+	}
+	seq[4] = tile.Action{Seconds: 2, Type: constants.Turret, X: 8, Y: 3}
+	seq[5] = tile.Action{Seconds: 2, Type: constants.Tracker, X: 9, Y: 3}
+
+	obj := tile.NewTile(
+		&shared_structs.GameObject{
+			Sprite:               "platformerPack_industrial_tilesheet_64x64",
+			SpriteOffsetX:        300,
+			SpriteOffsetY:        100,
+			SpriteWidth:          64,
+			SpriteHeight:         64,
+			SpriteFlipHorizontal: false,
+			SpriteFlipVertical:   false,
+			SpriteFlipDiagonal:   false,
+			Angle:                body.Angle(),
+			UUID:                 uuid.New().String(),
+			Body:                 body,
+			Shape:                shape,
+			IsStatic:             true,
+			Identity:             constants.Tile,
+		}, seq)
+	body.UserData = obj.GameObject
+
+	physics.AddShape(shape)
+	simulationObjects = append(simulationObjects, obj)
+	physics.AddBody(body)
 
 	newPickup := pickup.NewPickup(7, 7, "bombplus")
 	physics.AddShape(newPickup.Shape)
@@ -100,7 +160,6 @@ func main() {
 	hub := sock_server.Api(players)
 
 	prevTime = time.Now()
-	turretSpawnTIme := time.Now()
 	for {
 		includeStaticAndAsleep := false
 		players.WriteAccess.Lock()
@@ -132,68 +191,6 @@ func main() {
 		default:
 		}
 
-		var targetBod *shared_structs.GameObject
-		for _, pl := range players.Players {
-			targetBod = pl.GameObject
-		}
-
-		if countTurrets < len(players.Players) && time.Now().UnixMilli() > turretSpawnTIme.Add(1*time.Second).UnixMilli() {
-			turretSpawnTIme = time.Now()
-			body := cp.NewBody(1, 1)
-			shape := cp.NewBox(body, 1, 1, 0)
-			shape.SetElasticity(0.25)
-			shape.SetDensity(0.5)
-			shape.SetFriction(1.0)
-			body.AddShape(shape)
-			body.SetPosition(cp.Vector{X: 5, Y: 5})
-			physics.AddBody(body)
-			physics.AddShape(shape)
-			newTurret := turret.NewTurret(&shared_structs.GameObject{
-				Sprite:               "spaceShooterRedux",
-				SpriteOffsetX:        225,
-				SpriteOffsetY:        0,
-				SpriteWidth:          98,
-				SpriteHeight:         75,
-				SpriteFlipHorizontal: false,
-				SpriteFlipVertical:   true,
-				SpriteFlipDiagonal:   false,
-				Angle:                0,
-				UUID:                 uuid.New().String(),
-				Body:                 body,
-				Shape:                shape,
-				Identity:             constants.Turret,
-			}, targetBod)
-			simulationObjects = append(simulationObjects, newTurret)
-			body.UserData = newTurret.GameObject
-
-			body = cp.NewBody(1, 1)
-			shape = cp.NewBox(body, 1, 1, 0)
-			shape.SetElasticity(0.25)
-			shape.SetDensity(0.5)
-			shape.SetFriction(1.0)
-			body.AddShape(shape)
-			body.SetPosition(cp.Vector{X: 5, Y: 5})
-			physics.AddBody(body)
-			physics.AddShape(shape)
-			newTracker := tracker.NewTracker(&shared_structs.GameObject{
-				Sprite:               "spaceShooterRedux",
-				SpriteOffsetX:        450,
-				SpriteOffsetY:        0,
-				SpriteWidth:          98,
-				SpriteHeight:         75,
-				SpriteFlipHorizontal: false,
-				SpriteFlipVertical:   true,
-				SpriteFlipDiagonal:   false,
-				Angle:                0,
-				UUID:                 uuid.New().String(),
-				Body:                 body,
-				Shape:                shape,
-				Identity:             constants.Tracker,
-			}, targetBod)
-			simulationObjects = append(simulationObjects, newTracker)
-			body.UserData = newTracker.GameObject
-		}
-
 		prevTime = time.Now()
 		physics.Step(deltaTime)
 		players.WriteAccess.Unlock()
@@ -209,7 +206,7 @@ func main() {
 		data := collectWorldState(includeStaticAndAsleep)
 		pruneWorldState()
 
-		for sock, _ := range hub.Clients {
+		for sock := range hub.Clients {
 			data.Name = sock.Player.UUID
 			msg, _ := json.Marshal(data)
 			sock.Send <- msg
@@ -245,7 +242,7 @@ func collectWorldState(includeStaticAndAsleep bool) *shared_structs.WorldData {
 	data := shared_structs.WorldData{}
 	for _, obj := range simulationObjects {
 		gameObj := obj.GetObject()
-		if !includeStaticAndAsleep && gameObj.IsStatic {
+		if !includeStaticAndAsleep && gameObj.IsStatic && !gameObj.Delete {
 			continue
 		}
 		if !includeStaticAndAsleep && gameObj.Body.IsSleeping() {

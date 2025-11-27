@@ -5,6 +5,7 @@ import (
 	"Geomyidae/internal/shared_structs"
 	"math"
 
+	"github.com/google/uuid"
 	"github.com/jakecoffman/cp/v2"
 )
 
@@ -13,8 +14,32 @@ type Tracker struct {
 	target *shared_structs.GameObject
 }
 
-func NewTracker(gameObject, target *shared_structs.GameObject) *Tracker {
-	return &Tracker{gameObject, target}
+func NewTracker(target *shared_structs.GameObject, x, y float64) *Tracker {
+	body := cp.NewBody(1, 1)
+	shape := cp.NewBox(body, 1, 1, 0)
+	shape.SetElasticity(0.25)
+	shape.SetDensity(0.5)
+	shape.SetFriction(1.0)
+	body.AddShape(shape)
+	body.SetPosition(cp.Vector{X: x, Y: y})
+	obj := shared_structs.GameObject{
+		Sprite:               "spaceShooterRedux",
+		SpriteOffsetX:        450,
+		SpriteOffsetY:        0,
+		SpriteWidth:          98,
+		SpriteHeight:         75,
+		SpriteFlipHorizontal: false,
+		SpriteFlipVertical:   true,
+		SpriteFlipDiagonal:   false,
+		Angle:                0,
+		UUID:                 uuid.New().String(),
+		Body:                 body,
+		Shape:                shape,
+		Identity:             constants.Tracker,
+	}
+	body.UserData = &obj
+
+	return &Tracker{&obj, target}
 }
 
 // even infinitesimal thrust gets fast quick

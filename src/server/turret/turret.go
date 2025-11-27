@@ -8,6 +8,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jakecoffman/cp/v2"
 )
 
@@ -55,6 +56,29 @@ func (t *Turret) GetObject() *shared_structs.GameObject {
 	return t.GameObject
 }
 
-func NewTurret(gameObject, target *shared_structs.GameObject) *Turret {
-	return &Turret{gameObject, target, time.Now().Add(time.Second * 5)}
+func NewTurret(target *shared_structs.GameObject, x, y float64) *Turret {
+	body := cp.NewBody(1, 1)
+	shape := cp.NewBox(body, 1, 1, 0)
+	shape.SetElasticity(0.25)
+	shape.SetDensity(0.5)
+	shape.SetFriction(1.0)
+	body.AddShape(shape)
+	body.SetPosition(cp.Vector{X: x, Y: y})
+	obj := shared_structs.GameObject{
+		Sprite:               "spaceShooterRedux",
+		SpriteOffsetX:        225,
+		SpriteOffsetY:        0,
+		SpriteWidth:          98,
+		SpriteHeight:         75,
+		SpriteFlipHorizontal: false,
+		SpriteFlipVertical:   true,
+		SpriteFlipDiagonal:   false,
+		Angle:                0,
+		UUID:                 uuid.New().String(),
+		Body:                 body,
+		Shape:                shape,
+		Identity:             constants.Turret,
+	}
+	body.UserData = &obj
+	return &Turret{&obj, target, time.Now().Add(time.Second * 5)}
 }
