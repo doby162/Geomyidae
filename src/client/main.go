@@ -7,6 +7,7 @@ import (
 	"image"
 	"log"
 	"log/slog"
+
 	"math"
 	"net/url"
 	"os"
@@ -23,6 +24,9 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+
+	graphics "github.com/quasilyte/ebitengine-graphics"
+	"github.com/quasilyte/gmath"
 )
 
 const (
@@ -32,7 +36,15 @@ const (
 
 var sprites map[string]*ebiten.Image
 
-type Game struct{}
+type drawable interface {
+	Draw(screen *ebiten.Image)
+}
+
+type Game struct {
+	initialized     bool
+	pos             gmath.Vec
+	clientUiObjects []drawable
+}
 
 var worldMap map[string]*shared_structs.GameObject
 var mu sync.Mutex
@@ -53,6 +65,11 @@ func (g *Game) Update() error {
 	// If worldMap is not yet initialized, skip update
 	if len(worldMap) == 0 {
 		return nil
+	}
+
+	if !g.initialized {
+		g.Init()
+		g.initialized = true
 	}
 
 	winX, winY := ebiten.WindowPosition()
@@ -96,6 +113,22 @@ var cameraX float64
 var cameraY float64
 var socket WSConn
 
+func (g *Game) Init() {
+	{
+		r := graphics.NewRect(900, 900)
+		r.Pos.Base = &g.pos
+		r.SetFillColorScale(graphics.RGB(0xFF0000))
+		r.SetOutlineColorScale(graphics.RGB(0xff0000))
+		r.SetOutlineWidth(2)
+		g.clientUiObjects = append(g.clientUiObjects, r)
+
+		h := graphics.NewSprite()
+		h.Pos.Base = &g.pos
+		h.SetImage(sprites["spaceShooterRedux"])
+		g.clientUiObjects = append(g.clientUiObjects, h)
+	}
+}
+
 func (g *Game) Draw(screen *ebiten.Image) {
 	mu.Lock()
 	defer mu.Unlock()
@@ -114,6 +147,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		op.GeoM.Rotate(object.Angle)
 		op.GeoM.Translate(object.X-cameraX, object.Y-cameraY)
 		screen.DrawImage(sprites[object.Sprite].SubImage(image.Rect(object.SpriteOffsetX, object.SpriteOffsetY, object.SpriteOffsetX+object.SpriteWidth, object.SpriteOffsetY+object.SpriteHeight)).(*ebiten.Image), op)
+	}
+
+	// Client side UI elements
+	// Only used by Client side UI elements
+	g.pos = gmath.Vec{X: cameraX, Y: cameraY} // Example of setting position directly
+	for _, o := range g.clientUiObjects {
+		o.Draw(screen)
 	}
 
 	ebitenutil.DebugPrint(screen, "Camera position: "+fmt.Sprintf("%.2f, %.2f, goroutines:%v", cameraX, cameraY, runtime.NumGoroutine()))
