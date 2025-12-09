@@ -67,6 +67,8 @@ func (g *Game) Update() error {
 		return nil
 	}
 
+	// A made-up Init function based on example code.
+	// I'm using it to set up some UI.
 	if !g.initialized {
 		g.Init()
 		g.initialized = true
@@ -115,24 +117,27 @@ var socket WSConn
 
 func (g *Game) Init() {
 	{
-		r := graphics.NewRect(900, 900)
-		r.Pos.Base = &g.pos
-		r.SetFillColorScale(graphics.RGB(0xFF0000))
-		r.SetOutlineColorScale(graphics.RGB(0xff0000))
-		r.SetOutlineWidth(2)
-		g.clientUiObjects = append(g.clientUiObjects, r)
+		// A made-up Init function based on example code.
+		// I'm using it to set up some UI.
+		// This is run once inside of the Update() function
 
 		h := graphics.NewSprite()
 		h.Pos.Base = &g.pos
-		h.SetImage(sprites["spaceShooterRedux"])
+		h.SetImage(sprites["friedEgg"])
 		g.clientUiObjects = append(g.clientUiObjects, h)
 	}
 }
 
+var myPlayerUUID string
+
 func (g *Game) Draw(screen *ebiten.Image) {
+	var myPlayerOjbect shared_structs.GameObject
 	mu.Lock()
 	defer mu.Unlock()
 	for _, object := range worldMap {
+		if object.UUID == myPlayerUUID {
+			myPlayerOjbect = *object
+		}
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(-float64(object.SpriteWidth/2), -float64(object.SpriteHeight/2))
 		if object.SpriteFlipHorizontal {
@@ -151,7 +156,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	// Client side UI elements
 	// Only used by Client side UI elements
-	g.pos = gmath.Vec{X: cameraX, Y: cameraY} // Example of setting position directly
+	g.pos = gmath.Vec{X: myPlayerOjbect.X - cameraX, Y: myPlayerOjbect.Y - cameraY}
 	for _, o := range g.clientUiObjects {
 		o.Draw(screen)
 	}
@@ -187,11 +192,18 @@ func main() {
 	}
 	spaceShooterReduxImg, _, _ := image.Decode(bytes.NewReader(spaceShooterReduxData))
 
+	friedEggData, err := assets.FS.ReadFile("assets/img/fried_egg.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	friedEggImg, _, _ := image.Decode(bytes.NewReader(friedEggData))
+
 	// Create sprites map
 	sprites = make(map[string]*ebiten.Image)
 	sprites["platformerPack_industrial_tilesheet_64x64"] = ebiten.NewImageFromImage(platformPackImg)
 	sprites["kenny_pixel_platformer_industrial_expansion_tileset_64x64"] = ebiten.NewImageFromImage(platformerIndustrialExpansionTilesetImg)
 	sprites["spaceShooterRedux"] = ebiten.NewImageFromImage(spaceShooterReduxImg)
+	sprites["friedEgg"] = ebiten.NewImageFromImage(friedEggImg)
 
 	// Connect to WebSocket server
 	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/ws"}
@@ -228,6 +240,9 @@ func main() {
 				slog.Error("unmarshal:", err)
 			}
 			mu.Lock()
+			if myPlayerUUID == "" {
+				myPlayerUUID = newState.Name
+			}
 			for _, object := range newState.Objects {
 				key := object.UUID
 				if key == newState.Name {
