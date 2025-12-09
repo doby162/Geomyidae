@@ -132,8 +132,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	hudOverlay := graphics.NewSprite()
 	hudOverlay.Pos.Base = &hudPosition
 	hudOverlay.SetImage(sprites["friedEgg"])
-	hudOverlay.SetScaleX(2)
-	hudOverlay.SetScaleY(2)
+	hudOverlay.SetScaleX(0.9)
+	hudOverlay.SetScaleY(0.9)
 	hudOverlay.Draw(screen)
 
 	ebitenutil.DebugPrint(screen, "Camera position: "+fmt.Sprintf("%.2f, %.2f, goroutines:%v", cameraX, cameraY, runtime.NumGoroutine()))
