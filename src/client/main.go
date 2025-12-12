@@ -136,7 +136,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	hudOverlay.SetScaleY(0.9)
 	hudOverlay.Draw(screen)
 
-	ebitenutil.DebugPrint(screen, "Camera position: "+fmt.Sprintf("%.2f, %.2f, goroutines:%v", cameraX, cameraY, runtime.NumGoroutine()))
+	ebitenutil.DebugPrint(screen, "Camera position: "+fmt.Sprintf("%.2f, %.2f | Velocity: %.2f, %.2f | Goroutines:%v", cameraX, cameraY, myPlayerOjbect.VelocityX, myPlayerOjbect.VelocityY, runtime.NumGoroutine()))
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {

@@ -26,6 +26,8 @@ type GameObject struct {
 	IsStatic             bool                   `json:"-"`
 	Identity             constants.UserDataCode `json:"-"`
 	Inbox                chan string            `json:"-"`
+	VelocityX            float64                `json:"vx"`
+	VelocityY            float64                `json:"vy"`
 }
 
 type HasBehavior interface {

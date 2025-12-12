@@ -198,6 +198,9 @@ func main() {
 		for _, obj := range simulationObjects {
 			gameObj := obj.GetObject()
 			pos := gameObj.Body.Position()
+			speed := gameObj.Body.Velocity()
+			gameObj.VelocityX = speed.X * metersToPixels
+			gameObj.VelocityY = speed.Y * metersToPixels
 			gameObj.X = pos.X * metersToPixels
 			gameObj.Y = pos.Y * metersToPixels
 			gameObj.Angle = gameObj.Body.Angle()
