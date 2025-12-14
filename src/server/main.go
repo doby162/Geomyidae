@@ -211,6 +211,7 @@ func main() {
 
 		for sock := range hub.Clients {
 			data.GameData.PlayerUUID = sock.Player.UUID
+			data.GameData.Portal = sock.Player.Portal
 			msg, _ := json.Marshal(data)
 			sock.Send <- msg
 		}

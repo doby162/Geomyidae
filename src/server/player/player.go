@@ -27,11 +27,12 @@ func NewList(physics *cp.Space, fn func(networkPlayer *NetworkPlayer)) *List {
 type NetworkPlayer struct {
 	*shared_structs.GameObject
 
-	canJump   bool
-	HeldKeys  []string
-	shootTime float64
-	bombCount int
-	bombTime  float64
+	canJump              bool
+	HeldKeys             []string
+	shootTime            float64
+	bombCount            int
+	bombTime             float64
+	portalToggleCooldown float64
 }
 
 // NewNetworkPlayer creates a network player and stores a pointer to it in both the master list and the network player list
@@ -64,6 +65,7 @@ func (l *List) NewNetworkPlayer() *NetworkPlayer {
 		NeedsStatics:  true,
 		Identity:      constants.Player,
 		Inbox:         make(chan string, 10), // if the inbox fills up it will block so the sender is responsible for not sending data once it is full
+		Portal:        true,
 	}, HeldKeys: []string{}, canJump: true}
 	body.UserData = player.GameObject
 	point := &player
@@ -91,6 +93,9 @@ func (p *NetworkPlayer) ApplyBehavior(deltaTime float64, spawnerPipeline chan sh
 	}
 	if p.bombTime >= 0 {
 		p.bombTime -= deltaTime
+	}
+	if p.portalToggleCooldown >= 0 {
+		p.portalToggleCooldown -= deltaTime
 	}
 	select {
 	case msg, ok := <-p.Inbox:
@@ -138,6 +143,10 @@ func (p *NetworkPlayer) ApplyBehavior(deltaTime float64, spawnerPipeline chan sh
 			case spawnerPipeline <- newBullet:
 			default:
 			}
+		}
+		if key == "P" && p.portalToggleCooldown <= 0 {
+			p.Portal = !p.Portal
+			p.portalToggleCooldown = 0.5
 		}
 	}
 

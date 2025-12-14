@@ -19,15 +19,16 @@ type GameObject struct {
 	SpriteFlipDiagonal   bool                   `json:"sfd"`
 	Angle                float64                `json:"rot"`
 	UUID                 string                 `json:"id"`
+	VelocityX            float64                `json:"vx"`
+	VelocityY            float64                `json:"vy"`
+	Delete               bool                   `json:"del"`
 	Body                 *cp.Body               `json:"-"`
 	Shape                *cp.Shape              `json:"-"`
-	Delete               bool                   `json:"del"`
 	NeedsStatics         bool                   `json:"-"`
 	IsStatic             bool                   `json:"-"`
 	Identity             constants.UserDataCode `json:"-"`
 	Inbox                chan string            `json:"-"`
-	VelocityX            float64                `json:"vx"`
-	VelocityY            float64                `json:"vy"`
+	Portal               bool                   `json:"-"`
 }
 
 type HasBehavior interface {
