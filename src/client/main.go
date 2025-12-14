@@ -39,6 +39,7 @@ var sprites map[string]*ebiten.Image
 type Game struct{}
 
 var worldMap map[string]*shared_structs.GameObject
+var gameData shared_structs.GameData
 var mu sync.Mutex
 var oldKeys shared_structs.KeyStruct
 
@@ -107,7 +108,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	mu.Lock()
 	defer mu.Unlock()
 	for _, object := range worldMap {
-		if object.UUID == myPlayerUUID {
+		if object.UUID == gameData.PlayerUUID {
 			myPlayerOjbect = *object
 		}
 		op := &ebiten.DrawImageOptions{}
@@ -128,13 +129,15 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	// Client side UI elements
 	// Only used by Client side UI elements
-	hudPosition := gmath.Vec{X: myPlayerOjbect.X - cameraX, Y: myPlayerOjbect.Y - cameraY}
-	hudOverlay := graphics.NewSprite()
-	hudOverlay.Pos.Base = &hudPosition
-	hudOverlay.SetImage(sprites["friedEgg"])
-	hudOverlay.SetScaleX(0.9)
-	hudOverlay.SetScaleY(0.9)
-	hudOverlay.Draw(screen)
+	if gameData.Portal {
+		hudPosition := gmath.Vec{X: myPlayerOjbect.X - cameraX, Y: myPlayerOjbect.Y - cameraY}
+		hudOverlay := graphics.NewSprite()
+		hudOverlay.Pos.Base = &hudPosition
+		hudOverlay.SetImage(sprites["friedEgg"])
+		hudOverlay.SetScaleX(0.9)
+		hudOverlay.SetScaleY(0.9)
+		hudOverlay.Draw(screen)
+	}
 
 	ebitenutil.DebugPrint(screen, "Camera position: "+fmt.Sprintf("%.2f, %.2f | Velocity: %.2f, %.2f | Goroutines:%v", cameraX, cameraY, myPlayerOjbect.VelocityX, myPlayerOjbect.VelocityY, runtime.NumGoroutine()))
 }
@@ -215,12 +218,10 @@ func main() {
 				slog.Error("unmarshal:", err)
 			}
 			mu.Lock()
-			if myPlayerUUID == "" {
-				myPlayerUUID = newState.Name
-			}
+			gameData = newState.GameData
 			for _, object := range newState.Objects {
 				key := object.UUID
-				if key == newState.Name {
+				if key == gameData.PlayerUUID {
 					cameraX, cameraY = object.X-screenWidth/2, object.Y-screenHeight/2
 				}
 				if object.Delete {

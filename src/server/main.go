@@ -210,7 +210,7 @@ func main() {
 		pruneWorldState()
 
 		for sock := range hub.Clients {
-			data.Name = sock.Player.UUID
+			data.GameData.PlayerUUID = sock.Player.UUID
 			msg, _ := json.Marshal(data)
 			sock.Send <- msg
 		}

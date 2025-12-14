@@ -39,7 +39,12 @@ type KeyStruct struct {
 	Keys []string `json:"keys"`
 }
 
+type GameData struct {
+	Portal     bool   `json:"portal"`
+	PlayerUUID string `json:"pud"`
+}
+
 type WorldData struct {
-	Name    string       `json:"name"`
-	Objects []GameObject `json:"objects"`
+	Objects  []GameObject `json:"objects"`
+	GameData GameData     `json:"gd"`
 }
