@@ -4,11 +4,21 @@ import (
 	"Geomyidae/internal/constants"
 
 	"github.com/jakecoffman/cp/v2"
+
+	"strconv"
 )
 
+// A special float that gets rounded to 2 decimal places when marshaled to JSON
+// https://stackoverflow.com/a/61811599
+type RoundedFloat2 float64
+
+func (r RoundedFloat2) MarshalJSON() ([]byte, error) {
+	return []byte(strconv.FormatFloat(float64(r), 'f', 2, 32)), nil
+}
+
 type GameObject struct {
-	X                    float64                `json:"x"`
-	Y                    float64                `json:"y"`
+	X                    int                    `json:"x"`
+	Y                    int                    `json:"y"`
 	Sprite               string                 `json:"s"`
 	SpriteOffsetX        int                    `json:"sx0"`
 	SpriteOffsetY        int                    `json:"sy0"`
@@ -17,10 +27,8 @@ type GameObject struct {
 	SpriteFlipHorizontal bool                   `json:"sfh"`
 	SpriteFlipVertical   bool                   `json:"sfv"`
 	SpriteFlipDiagonal   bool                   `json:"sfd"`
-	Angle                float64                `json:"rot"`
+	Angle                RoundedFloat2          `json:"rot"`
 	UUID                 string                 `json:"id"`
-	VelocityX            float64                `json:"vx"`
-	VelocityY            float64                `json:"vy"`
 	Delete               bool                   `json:"del"`
 	Body                 *cp.Body               `json:"-"`
 	Shape                *cp.Shape              `json:"-"`

@@ -40,8 +40,8 @@ func NewPickup(x float64, y float64, str string) *Pickup {
 	body.AddShape(shape)
 	body.SetPosition(cp.Vector{X: x, Y: y})
 	gameObject := shared_structs.GameObject{
-		X:             x,
-		Y:             y,
+		X:             int(x),
+		Y:             int(y),
 		Sprite:        "spaceShooterRedux",
 		SpriteOffsetX: 320,
 		SpriteOffsetY: 310,

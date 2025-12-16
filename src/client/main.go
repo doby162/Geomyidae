@@ -97,19 +97,17 @@ func (g *Game) Update() error {
 	return nil
 }
 
-var cameraX float64
-var cameraY float64
+var cameraX int
+var cameraY int
 var socket WSConn
 
-var myPlayerUUID string
-
 func (g *Game) Draw(screen *ebiten.Image) {
-	var myPlayerOjbect shared_structs.GameObject
+	var myPlayerObject shared_structs.GameObject
 	mu.Lock()
 	defer mu.Unlock()
 	for _, object := range worldMap {
 		if object.UUID == gameData.PlayerUUID {
-			myPlayerOjbect = *object
+			myPlayerObject = *object
 		}
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(-float64(object.SpriteWidth/2), -float64(object.SpriteHeight/2))
@@ -122,15 +120,15 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		if object.SpriteFlipDiagonal {
 			op.GeoM.Rotate(math.Pi / 2)
 		}
-		op.GeoM.Rotate(object.Angle)
-		op.GeoM.Translate(object.X-cameraX, object.Y-cameraY)
+		op.GeoM.Rotate(float64(object.Angle))
+		op.GeoM.Translate(float64(object.X-cameraX), float64(object.Y-cameraY))
 		screen.DrawImage(sprites[object.Sprite].SubImage(image.Rect(object.SpriteOffsetX, object.SpriteOffsetY, object.SpriteOffsetX+object.SpriteWidth, object.SpriteOffsetY+object.SpriteHeight)).(*ebiten.Image), op)
 	}
 
 	// Client side UI elements
 	// Only used by Client side UI elements
 	if gameData.Portal {
-		hudPosition := gmath.Vec{X: myPlayerOjbect.X - cameraX, Y: myPlayerOjbect.Y - cameraY}
+		hudPosition := gmath.Vec{X: float64(myPlayerObject.X - cameraX), Y: float64(myPlayerObject.Y - cameraY)}
 		hudOverlay := graphics.NewSprite()
 		hudOverlay.Pos.Base = &hudPosition
 		hudOverlay.SetImage(sprites["friedEgg"])
@@ -139,7 +137,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		hudOverlay.Draw(screen)
 	}
 
-	ebitenutil.DebugPrint(screen, "Camera position: "+fmt.Sprintf("%.2f, %.2f | Velocity: %.2f, %.2f | Goroutines:%v\np - Toggle Portal", cameraX, cameraY, myPlayerOjbect.VelocityX, myPlayerOjbect.VelocityY, runtime.NumGoroutine()))
+	ebitenutil.DebugPrint(screen, "Camera position: "+fmt.Sprintf("%d, %d | Goroutines:%v\np - Toggle Portal", cameraX, cameraY, runtime.NumGoroutine()))
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {

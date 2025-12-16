@@ -38,7 +38,7 @@ func NewBullet(gameObj *shared_structs.GameObject) *Bullet {
 		SpriteOffsetY: 0,
 		SpriteWidth:   16,
 		SpriteHeight:  16,
-		Angle:         body.Angle(),
+		Angle:         shared_structs.RoundedFloat2(body.Angle()),
 		UUID:          uuid.New().String(),
 		Body:          body,
 		Shape:         shape,

@@ -76,7 +76,7 @@ func main() {
 				SpriteFlipHorizontal: td.SpriteFlipHorizontal,
 				SpriteFlipVertical:   td.SpriteFlipVertical,
 				SpriteFlipDiagonal:   td.SpriteFlipDiagonal,
-				Angle:                body.Angle(),
+				Angle:                shared_structs.RoundedFloat2(body.Angle()),
 				UUID:                 uuid.New().String(),
 				Body:                 body,
 				Shape:                shape,
@@ -138,7 +138,7 @@ func main() {
 			SpriteFlipHorizontal: false,
 			SpriteFlipVertical:   false,
 			SpriteFlipDiagonal:   false,
-			Angle:                body.Angle(),
+			Angle:                shared_structs.RoundedFloat2(body.Angle()),
 			UUID:                 uuid.New().String(),
 			Body:                 body,
 			Shape:                shape,
@@ -198,12 +198,9 @@ func main() {
 		for _, obj := range simulationObjects {
 			gameObj := obj.GetObject()
 			pos := gameObj.Body.Position()
-			speed := gameObj.Body.Velocity()
-			gameObj.VelocityX = speed.X * metersToPixels
-			gameObj.VelocityY = speed.Y * metersToPixels
-			gameObj.X = pos.X * metersToPixels
-			gameObj.Y = pos.Y * metersToPixels
-			gameObj.Angle = gameObj.Body.Angle()
+			gameObj.X = int(pos.X * metersToPixels)
+			gameObj.Y = int(pos.Y * metersToPixels)
+			gameObj.Angle = shared_structs.RoundedFloat2(gameObj.Body.Angle())
 		}
 
 		data := collectWorldState(includeStaticAndAsleep)

@@ -28,8 +28,8 @@ func NewBomb(x, y float64) *Bomb {
 	body.AddShape(shape)
 	body.SetPosition(cp.Vector{X: x / 64, Y: y / 64})
 	gameObject := shared_structs.GameObject{
-		X:             x,
-		Y:             y,
+		X:             int(x),
+		Y:             int(y),
 		Sprite:        "spaceShooterRedux",
 		SpriteOffsetX: 20,
 		SpriteOffsetY: 0,
