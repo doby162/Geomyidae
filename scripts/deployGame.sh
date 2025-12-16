@@ -98,6 +98,11 @@ if ! (command -v zip >/dev/null) || ! (command -v unison >/dev/null); then
   type -p unison >/dev/null || (sudo apt update && sudo apt install unison -y)
 fi
 
+if [[  -d "${PROJECT_PATH}/dist" ]]; then
+  rm -rf "${PROJECT_PATH}/dist"
+fi
+mkdir "${PROJECT_PATH}/dist"
+
 printf "\n${YELLOW}Building Go binaries${NC}"
 printf "\n\t${YELLOW}Server${NC}\n"
 cd "${PROJECT_PATH}/src" || exit
@@ -106,26 +111,47 @@ if [[ -e "${PROJECT_PATH}/src/${GAME_NAME}-server" ]]; then
 fi
 go build -o "${PROJECT_PATH}/src/${GAME_NAME}-server" ./server/
 printf "\n\t${YELLOW}WASM Client${NC}\n"
-GOOS=js GOARCH=wasm go build -o "${PROJECT_PATH}/web/geomyidae.wasm" ./client
+GOOS=js GOARCH=wasm go build -o "${PROJECT_PATH}/dist/geomyidae.wasm" ./client
 GO_ROOT=$(go env GOROOT)
-if [[ -e "${PROJECT_PATH}/web/wasm_exec.js" ]]; then
-  rm "${PROJECT_PATH}/web/wasm_exec.js"
+if [[ -e "${PROJECT_PATH}/dist/wasm_exec.js" ]]; then
+  rm "${PROJECT_PATH}/dist/wasm_exec.js"
 fi
 if [[ -e "$GO_ROOT/misc/wasm/wasm_exec.js" ]]; then
-    cp "$GO_ROOT/misc/wasm/wasm_exec.js" "${PROJECT_PATH}/web/"
+    cp "$GO_ROOT/misc/wasm/wasm_exec.js" "${PROJECT_PATH}/dist/"
 elif [[ -e "$GO_ROOT/lib/wasm/wasm_exec.js" ]]; then
-  cp "$GO_ROOT/lib/wasm/wasm_exec.js" "${PROJECT_PATH}/web/"
+  cp "$GO_ROOT/lib/wasm/wasm_exec.js" "${PROJECT_PATH}/dist/"
 else
   echo "Could not find wasm_exec.js in $GO_ROOT/misc/wasm/ or $GO_ROOT/lib/wasm/"
   exit 1
 fi
+
+cp "${PROJECT_PATH}/web/index.html" "${PROJECT_PATH}/dist/index.html"
+
+printf "\n${YELLOW}Cache Busting${NC}\n"
+# Most web servers and browsers are really bad about caching too aggressively when it comes to binary files
+# This both ensures updated files do not cache,
+# and allows for highly aggressive caching to be used to save bandwidth for you and your users.
+# https://stackoverflow.com/a/7450854/4982408
+cd "${PROJECT_PATH}/dist" || exit
+for file in *
+do
+  if ! [[ ${file} == index.html ]];then
+    CHECK_SUM=$(sha224sum "${file}" | awk '{ print $1 }')
+    # Place the checksum before the file extension
+    filename="${file%.*}"
+    extension="${file##*.}"
+    NEW_FILE_NAME="${filename}-${CHECK_SUM}.${extension}"
+    mv "$file" "${NEW_FILE_NAME}"
+    sed -i -- "s/${file}/${NEW_FILE_NAME}/g" "${PROJECT_PATH}/dist/index.html"
+  fi
+done
 
 if [[ "${REMOTE_HOST}" != "" ]]; then
   printf "\n${YELLOW}Syncing Builds to Server${NC}"
   printf "\n\t${YELLOW}Syncing Web Content${NC}\n"
 
   UNISON_ARGUMENTS=()
-  UNISON_ARGUMENTS+=("${PROJECT_PATH}/web/")
+  UNISON_ARGUMENTS+=("${PROJECT_PATH}/dist/")
   UNISON_ARGUMENTS+=("ssh://${USER}@${REMOTE_HOST}//mnt/2000/container-mounts/caddy/site/${GAME_NAME}")
   UNISON_ARGUMENTS+=(-force "${PROJECT_PATH}")
   UNISON_ARGUMENTS+=(-perms)
@@ -142,5 +168,5 @@ if [[ "${REMOTE_HOST}" != "" ]]; then
 
   printf "\n${YELLOW}Restarting Server${NC}\n"
   # shellcheck disable=SC2029
-  ssh.exe "${USER}@${REMOTE_HOST}" "chmod +x /mnt/2000/container-mounts/caddy/${GAME_NAME}/${GAME_NAME}-server-NEW;mv /mnt/2000/container-mounts/caddy/${GAME_NAME}/${GAME_NAME}-server-NEW /mnt/2000/container-mounts/caddy/${GAME_NAME}/${GAME_NAME}-server;cd /home/${USER}/containers/caddy;docker compose up --detach --build ${GAME_NAME}"
+  ssh.exe "${USER}@${REMOTE_HOST}" "chmod +x /mnt/2000/container-mounts/caddy/${GAME_NAME}/${GAME_NAME}-server-NEW;mv /mnt/2000/container-mounts/caddy/${GAME_NAME}/${GAME_NAME}-server-NEW /mnt/2000/container-mounts/caddy/${GAME_NAME}/${GAME_NAME}-server;cd /home/${USER}/containers/caddy;docker compose up --detach --build ${GAME_NAME};docker compose restart ${GAME_NAME}"
 fi
