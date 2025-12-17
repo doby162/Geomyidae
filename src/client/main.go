@@ -137,7 +137,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		hudOverlay.Draw(screen)
 	}
 
-	ebitenutil.DebugPrint(screen, "Camera position: "+fmt.Sprintf("%d, %d | Goroutines:%v\np - Toggle Portal", cameraX, cameraY, runtime.NumGoroutine()))
+	ebitenutil.DebugPrint(screen, "Camera position: "+fmt.Sprintf("%d, %d | Goroutines: %v\np - Toggle Portal", cameraX, cameraY, runtime.NumGoroutine()))
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
