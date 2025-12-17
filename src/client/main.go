@@ -30,8 +30,8 @@ import (
 )
 
 const (
-	screenWidth  = 1280
-	screenHeight = 832
+	screenWidth  = 1920
+	screenHeight = 1080
 )
 
 var sprites map[string]*ebiten.Image
@@ -50,9 +50,12 @@ type UserConfig struct {
 	WindowPositionY int    `json:"window_position_y"`
 	WindowSizeX     int    `json:"window_size_x"`
 	WindowSizeY     int    `json:"window_size_y"`
+	IsFullscreen    bool   `json:"is_fullscreen"`
 }
 
 var userConfig UserConfig
+
+var debounceKeys = make(map[ebiten.Key]int)
 
 func (g *Game) Update() error {
 	// If worldMap is not yet initialized, skip update
@@ -62,11 +65,12 @@ func (g *Game) Update() error {
 
 	winX, winY := ebiten.WindowPosition()
 	winSizeX, winSizeY := ebiten.WindowSize()
-	if userConfig.ConfigPath != "" && (winX != userConfig.WindowPositionX || winY != userConfig.WindowPositionY || winSizeX != userConfig.WindowSizeX || winSizeY != userConfig.WindowSizeY) {
+	if userConfig.ConfigPath != "" && (winX != userConfig.WindowPositionX || winY != userConfig.WindowPositionY || winSizeX != userConfig.WindowSizeX || winSizeY != userConfig.WindowSizeY || ebiten.IsFullscreen() != userConfig.IsFullscreen) {
 		userConfig.WindowSizeX = winSizeX
 		userConfig.WindowSizeY = winSizeY
 		userConfig.WindowPositionX = winX
 		userConfig.WindowPositionY = winY
+		userConfig.IsFullscreen = ebiten.IsFullscreen()
 		configData, _ := json.MarshalIndent(userConfig, "", "  ")
 		configFile, err := os.Create(userConfig.ConfigPath)
 		if err != nil {
@@ -80,8 +84,33 @@ func (g *Game) Update() error {
 
 	msg := shared_structs.KeyStruct{}
 
+	for i, ekey := range debounceKeys {
+		if ekey > 0 {
+			debounceKeys[i]--
+		}
+	}
+
 	for _, ekey := range inpututil.AppendPressedKeys([]ebiten.Key{}) {
-		msg.Keys = append(msg.Keys, ekey.String())
+		if ekey == ebiten.KeyEscape {
+			if debounceKeys[ekey] == 0 {
+				debounceKeys[ekey] = 10
+				if ebiten.IsFullscreen() {
+					ebiten.SetFullscreen(false)
+				}
+			}
+		} else if ekey == ebiten.KeyF11 {
+			if debounceKeys[ekey] == 0 {
+				debounceKeys[ekey] = 10
+				ebiten.SetFullscreen(!ebiten.IsFullscreen())
+			}
+		} else if ekey == ebiten.KeyF {
+			if debounceKeys[ekey] == 0 {
+				debounceKeys[ekey] = 10
+				ebiten.SetFullscreen(!ebiten.IsFullscreen())
+			}
+		} else {
+			msg.Keys = append(msg.Keys, ekey.String())
+		}
 	}
 	if slices.Equal(msg.Keys, oldKeys.Keys) {
 		return nil
@@ -131,13 +160,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		hudPosition := gmath.Vec{X: float64(myPlayerObject.X - cameraX), Y: float64(myPlayerObject.Y - cameraY)}
 		hudOverlay := graphics.NewSprite()
 		hudOverlay.Pos.Base = &hudPosition
-		hudOverlay.SetImage(sprites["friedEgg"])
-		hudOverlay.SetScaleX(0.9)
-		hudOverlay.SetScaleY(0.9)
+		hudOverlay.SetImage(sprites["portalMask"])
+		hudOverlay.SetScaleX(10)
+		hudOverlay.SetScaleY(10)
 		hudOverlay.Draw(screen)
 	}
 
-	ebitenutil.DebugPrint(screen, "Camera position: "+fmt.Sprintf("%d, %d | Goroutines: %v\np - Toggle Portal", cameraX, cameraY, runtime.NumGoroutine()))
+	ebitenutil.DebugPrint(screen, "Camera position: "+fmt.Sprintf("%d, %d | Goroutines: %v\np - Toggle Portal\nf or F11 - Toggle Fullscreen", cameraX, cameraY, runtime.NumGoroutine()))
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
@@ -168,18 +197,18 @@ func main() {
 	}
 	spaceShooterReduxImg, _, _ := image.Decode(bytes.NewReader(spaceShooterReduxData))
 
-	friedEggData, err := assets.FS.ReadFile("assets/img/fried_egg.png")
+	portalMaskData, err := assets.FS.ReadFile("assets/img/portal_mask.png")
 	if err != nil {
 		log.Fatal(err)
 	}
-	friedEggImg, _, _ := image.Decode(bytes.NewReader(friedEggData))
+	portalMaskImg, _, _ := image.Decode(bytes.NewReader(portalMaskData))
 
 	// Create sprites map
 	sprites = make(map[string]*ebiten.Image)
 	sprites["platformerPack_industrial_tilesheet_64x64"] = ebiten.NewImageFromImage(platformPackImg)
 	sprites["kenny_pixel_platformer_industrial_expansion_tileset_64x64"] = ebiten.NewImageFromImage(platformerIndustrialExpansionTilesetImg)
 	sprites["spaceShooterRedux"] = ebiten.NewImageFromImage(spaceShooterReduxImg)
-	sprites["friedEgg"] = ebiten.NewImageFromImage(friedEggImg)
+	sprites["portalMask"] = ebiten.NewImageFromImage(portalMaskImg)
 
 	// Connect to WebSocket server
 	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/ws"}
@@ -285,6 +314,9 @@ func main() {
 	}
 	if userConfig.WindowSizeX != 0 && userConfig.WindowSizeY != 0 {
 		ebiten.SetWindowSize(userConfig.WindowSizeX, userConfig.WindowSizeY)
+	}
+	if userConfig.IsFullscreen {
+		ebiten.SetFullscreen(userConfig.IsFullscreen)
 	}
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)
