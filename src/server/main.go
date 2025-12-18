@@ -50,6 +50,25 @@ func main() {
 
 	// instantiate chipmunk
 	physics = cp.NewSpace()
+	/*
+	TL;DR: Without calling UseSpatialHash before setting SleepTimeThreshold,
+	the physics engine panics when trying to put sleeping bodies to sleep.
+
+	Detailed
+	Summary: The crash was caused by the chipmunk physics library's sleeping/deactivation system attempting to use spatial hashing that wasn't initialized. By calling UseSpatialHash(1, 50) before setting SleepTimeThreshold, the broad-phase collision detection is properly set up to handle sleeping bodies, and the panic is resolved.
+
+	The parameters (1, 50) mean:
+
+	1 = grid size in meters (adjust based on your typical object sizes)
+	50 = number of buckets for the hash table
+	You can tune these values based on your game's performance needs.
+	*/
+	physics.UseSpatialHash(1, 50)
+	// Set IdleSpeedThreshold to a reasonable value. This specifies the maximum velocity (in units/second) below which a body is considered "idle" and can potentially sleep. I set it to 1.0 - bodies moving slower than 1 unit/second will become eligible for sleeping after remaining idle for SleepTimeThreshold (0.5 seconds).
+	physics.IdleSpeedThreshold = 1.0
+	// Set SleepTimeThreshold to 0.5 seconds. This means that if a body remains idle (below the IdleSpeedThreshold) for 0.5 seconds, it will be put to sleep.
+	// Without this, non-static bodies never go to sleep
+	physics.SleepTimeThreshold = 0.5
 	players = player.NewList(physics, apOb)
 
 	spawnerPipeline := make(chan shared_structs.HasBehavior, 10)
